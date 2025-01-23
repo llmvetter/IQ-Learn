@@ -1,9 +1,5 @@
-import numpy as np
 import torch
 from torch import nn
-import torch.nn.functional as F
-from torch.autograd import Variable
-from torchvision.utils import make_grid, save_image
 
 
 class eval_mode(object):
@@ -127,17 +123,6 @@ def get_concat_samples(policy_batch, expert_batch, args):
                            torch.ones_like(expert_batch_reward, dtype=torch.bool)], dim=0)
 
     return batch_state, batch_next_state, batch_action, batch_reward, batch_done, is_expert
-
-
-def save_state(tensor, path, num_states=5):
-    """Show stack framed of images consisting the state"""
-
-    tensor = tensor[:num_states]
-    B, C, H, W = tensor.shape
-    images = tensor.reshape(-1, 1, H, W).cpu()
-    save_image(images, path, nrow=num_states)
-    # make_grid(images)
-
 
 def average_dicts(dict1, dict2):
     return {key: 1/2 * (dict1.get(key, 0) + dict2.get(key, 0))

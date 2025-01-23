@@ -1,12 +1,9 @@
-import os
 import numpy as np
 import torch
 import torch.nn.functional as F
 from torch.optim import Adam
 from torch.distributions import Categorical
 import hydra
-
-from wrappers.atari_wrapper import LazyFrames
 
 
 class SoftQ(object):
@@ -48,8 +45,7 @@ class SoftQ(object):
         return self.target_net
 
     def choose_action(self, state, sample=False):
-        if isinstance(state, LazyFrames):
-            state = np.array(state) / 255.0
+
         state = torch.FloatTensor(state).to(self.device).unsqueeze(0)
         with torch.no_grad():
             q = self.q_net(state)
@@ -126,8 +122,6 @@ class SoftQ(object):
         self.q_net.load_state_dict(torch.load(critic_path, map_location=self.device))
 
     def infer_q(self, state, action):
-        if isinstance(state, LazyFrames):
-            state = np.array(state) / 255.0
         state = torch.FloatTensor(state).to(self.device).unsqueeze(0)
         action = torch.FloatTensor([action]).unsqueeze(0).to(self.device)
 
@@ -136,8 +130,6 @@ class SoftQ(object):
         return q.squeeze(0).cpu().numpy()
 
     def infer_v(self, state):
-        if isinstance(state, LazyFrames):
-            state = np.array(state) / 255.0
         state = torch.FloatTensor(state).to(self.device).unsqueeze(0)
         with torch.no_grad():
             v = self.getV(state).squeeze()

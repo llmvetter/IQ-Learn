@@ -3,7 +3,6 @@ import numpy as np
 import random
 import torch
 
-from wrappers.atari_wrapper import LazyFrames
 from dataset.expert_dataset import ExpertDataset
 
 
@@ -37,12 +36,7 @@ class Memory(object):
         print(b.shape)
         np.save(path, b)
 
-    def load(self, path, num_trajs, sample_freq, seed):
-        # If path has no extension add npy
-        if not path.endswith("pkl"):
-            path += '.npy'
-        data = ExpertDataset(path, num_trajs, sample_freq, seed)
-        # data = np.load(path, allow_pickle=True)
+    def load(self, data: ExpertDataset):
         for i in range(len(data)):
             self.add(data[i])
 
@@ -52,12 +46,6 @@ class Memory(object):
         batch_state, batch_next_state, batch_action, batch_reward, batch_done = zip(
             *batch)
 
-        # Scale obs for atari. TODO: Use flags
-        if isinstance(batch_state[0], LazyFrames):
-            # Use lazyframes for improved memory storage (same as original DQN)
-            batch_state = np.array(batch_state) / 255.0
-        if isinstance(batch_next_state[0], LazyFrames):
-            batch_next_state = np.array(batch_next_state) / 255.0
         batch_state = np.array(batch_state)
         batch_next_state = np.array(batch_next_state)
         batch_action = np.array(batch_action)
