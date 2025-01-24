@@ -11,12 +11,10 @@ from omegaconf import OmegaConf
 
 # Set basic configurations
 SEED = 42
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 REPLAY_MEMORY = 10000
 INITIAL_MEMORY = 1000
-EPISODE_STEPS = 200
-LEARN_STEPS = 10000
-EVAL_INTERVAL = 1000
+EPISODE_STEPS = 400
+LEARN_STEPS = 2000
 LOG_INTERVAL = 100
 
 
@@ -29,7 +27,8 @@ def main():
 
     env = make_env()
     config = OmegaConf.load('C:/Users/lenna/Documents/IRL/IQ-Learn/conf/config.yaml')
-
+    config.agent.critic_cfg.obs_dim = env.observation_space.shape[0]
+    config.agent.critic_cfg.action_dim = env.action_space.n
     agent = make_agent(
         env=env,
         args=config,
@@ -40,19 +39,19 @@ def main():
     learn_steps = 0
     begin_learn = False
 
-     # Track rewards
+    # Track rewards
     rewards_window = deque(maxlen=100)  # For tracking recent rewards
 
     print('Starting training ....')
 
-    for epoch in range(1,10):
+    for epoch in range(1,20):
         state = env.reset()
         episode_reward = 0
         done = False
 
         for episode_step in range(EPISODE_STEPS):
 
-            if steps < range(EPISODE_STEPS):
+            if steps < EPISODE_STEPS: #seed replay buffer
                 action = env.action_space.sample()
             else:
                 action = agent.choose_action(state, sample=True)
@@ -68,7 +67,7 @@ def main():
                     begin_learn = True
 
                 learn_steps += 1
-                losses = agent.update(memory_replay)
+                losses = agent.update(memory_replay, learn_steps)
 
                 if learn_steps % LOG_INTERVAL == 0:
                     print(f"Step {learn_steps}: Losses {losses}")
