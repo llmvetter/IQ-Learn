@@ -22,7 +22,7 @@ class SoftQNetwork(nn.Module):
         else:
             out = self._forward(x)
 
-        if self.args.method.tanh:
+        if getattr(self.args.method, "tanh", False):
             return self.tanh(out) * 1/(1-self.args.gamma)
         return out
 
@@ -107,54 +107,6 @@ class OfflineQNetwork(SoftQNetwork):
         x = self.elu(self.fc2(x))
         x = self.fc3(x)
         return x
-
-
-class DoubleQNetwork(SoftQNetwork):
-    def __init__(self, obs_dim, action_dim, args, device='cpu'):
-        super(DoubleQNetwork, self).__init__(obs_dim, action_dim, args, device)
-        self.args = args
-        self.net1 = AtariQNetwork(obs_dim, action_dim, args, device)
-        self.net2 = AtariQNetwork(obs_dim, action_dim, args, device)
-
-    def _forward(self, x, both=False):
-        q1 = self.net1.forward(x)
-        q2 = self.net2.forward(x)
-
-        if both:
-            return q1, q2
-        else:
-            return torch.minimum(q1, q2)
-
-class AtariQNetwork(SoftQNetwork):
-    def __init__(self, obs_dim, action_dim, args, device='cpu', input_dim=(84, 84)):
-        super(AtariQNetwork, self).__init__(obs_dim, action_dim, args, device)
-        self.frames = 4
-        self.n_outputs = action_dim
-
-        # CNN modeled off of Mnih et al.
-        self.cnn = nn.Sequential(
-            nn.Conv2d(self.frames, 32, kernel_size=8, stride=4),
-            nn.ReLU(),
-            nn.Conv2d(32, 64, kernel_size=4, stride=2),
-            nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU()
-        )
-
-        self.fc_layer_inputs = self.cnn_out_dim(input_dim)
-
-        self.fully_connected = nn.Sequential(
-            nn.Linear(self.fc_layer_inputs, 512, bias=True),
-            nn.ReLU(),
-            nn.Linear(512, self.n_outputs))
-
-    def cnn_out_dim(self, input_dim):
-        return self.cnn(torch.zeros(1, self.frames, *input_dim)
-                        ).flatten().shape[0]
-
-    def _forward(self, x, *args):
-        cnn_out = self.cnn(x).reshape(-1, self.fc_layer_inputs)
-        return self.fully_connected(cnn_out)
 
 
 class SimpleVNetwork(SoftQNetwork):

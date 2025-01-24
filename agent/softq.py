@@ -3,11 +3,12 @@ import torch
 import torch.nn.functional as F
 from torch.optim import Adam
 from torch.distributions import Categorical
-import hydra
+
+from agent.softq_models import SimpleQNetwork
 
 
 class SoftQ(object):
-    def __init__(self, num_inputs, action_dim, batch_size, args):
+    def __init__(self, batch_size, args):
         self.gamma = args.gamma
         self.batch_size = batch_size
         self.device = torch.device(args.device)
@@ -18,10 +19,16 @@ class SoftQ(object):
 
         self.critic_target_update_frequency = agent_cfg.critic_target_update_frequency
         self.log_alpha = torch.tensor(np.log(agent_cfg.init_temp)).to(self.device)
-        self.q_net = hydra.utils.instantiate(
-            agent_cfg.critic_cfg, args=args, device=self.device).to(self.device)
-        self.target_net = hydra.utils.instantiate(agent_cfg.critic_cfg, args=args, device=self.device).to(
-            self.device)
+        self.q_net = SimpleQNetwork(
+            obs_dim=args.agent.critic_cfg.obs_dim,
+            action_dim=args.agent.critic_cfg.action_dim,
+            args=args,
+        )
+        self.target_net = SimpleQNetwork(
+            obs_dim=args.agent.critic_cfg.obs_dim,
+            action_dim=args.agent.critic_cfg.action_dim,
+            args=args,
+        )
         self.target_net.load_state_dict(self.q_net.state_dict())
         self.critic_optimizer = Adam(self.q_net.parameters(), lr=agent_cfg.critic_lr,
                                      betas=agent_cfg.critic_betas)
@@ -80,27 +87,25 @@ class SoftQ(object):
             torch.logsumexp(q/self.alpha, dim=1, keepdim=True)
         return target_v
 
-    def update(self, replay_buffer, logger, step):
+    def update(self, replay_buffer, step):
         obs, next_obs, action, reward, done = replay_buffer.get_samples(
             self.batch_size, self.device)
 
-        losses = self.update_critic(obs, action, reward, next_obs, done,
-                                    logger, step)
+        losses = self.update_critic(obs, action, reward, next_obs, done, step)
 
         if step % self.critic_target_update_frequency == 0:
             self.target_net.load_state_dict(self.q_net.state_dict())
 
         return losses
 
-    def update_critic(self, obs, action, reward, next_obs, done, logger,
-                      step):
+    def update_critic(self, obs, action, reward, next_obs, done, step):
 
         with torch.no_grad():
             next_v = self.get_targetV(next_obs)
             y = reward + (1 - done) * self.gamma * next_v
 
         critic_loss = F.mse_loss(self.critic(obs, action), y)
-        logger.log('train_critic/loss', critic_loss, step)
+        #print('train_critic/loss', critic_loss, step)
 
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
@@ -130,6 +135,7 @@ class SoftQ(object):
         return q.squeeze(0).cpu().numpy()
 
     def infer_v(self, state):
+
         state = torch.FloatTensor(state).to(self.device).unsqueeze(0)
         with torch.no_grad():
             v = self.getV(state).squeeze()
