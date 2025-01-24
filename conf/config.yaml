@@ -5,7 +5,7 @@ cuda_deterministic: False
 device: cpu
 
 gamma: 0.99
-seed: 0
+seed: 42
 pretrain: null
 
 num_seed_steps: 0 # Don't need seeding for IL (Use 1000 for RL)
@@ -13,6 +13,7 @@ only_expert_states: False
 
 train:
   batch: 32
+  epochs: 10
   use_target: False
   soft_update: False
 
