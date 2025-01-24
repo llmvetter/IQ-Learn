@@ -15,10 +15,10 @@ class CarFollowingEnv(gym.Env):
         # Define action space: acceleration/deceleration
         self.action_space = spaces.Discrete(5)
 
-        # Define observation space: [ego speed, distance to lead vehicle, lead speed, desired distance]
+        # Define observation space: [ego speed, distance to lead vehicle]
         self.observation_space = spaces.Box(
-            low=np.array([0, 0, 0, 0]),
-            high=np.array([self.max_speed, self.max_distance, self.max_speed, self.max_distance]),
+            low=np.array([0, 0]),
+            high=np.array([self.max_speed, self.max_distance]),
             dtype=np.float32
         )
 
@@ -38,35 +38,31 @@ class CarFollowingEnv(gym.Env):
         self.state = np.array([
             np.random.uniform(0, self.max_speed),  # Ego vehicle speed
             np.random.uniform(10, self.max_distance),  # Distance to lead vehicle
-            np.random.uniform(0, self.max_speed),  # Lead vehicle speed
-            np.random.uniform(10, self.max_distance)  # Desired following distance
         ])
         return self.state
 
     def step(self, action):
         """Take an action and return the next state, reward, done flag, and additional info."""
-        ego_speed, distance_to_lead, lead_speed, desired_distance = self.state
+        ego_speed, distance_to_lead = self.state
         
         # Apply acceleration/deceleration from action
         acceleration = self.action_mapping.get(action, 0)
         
         # Update ego vehicle speed
         ego_speed = np.clip(ego_speed + acceleration * self.delta_t, 0, self.max_speed)
+        relative_speed = np.random.normal(0, 0.8628)
         
-        # Update lead vehicle speed (simple model with noise)
-        lead_speed += np.random.normal(0, 0.1)
-        
-        # Calculate new distance to lead vehicle based on speeds
-        distance_to_lead += (lead_speed - ego_speed) * self.delta_t
+        if ego_speed != 0:
+            distance_to_lead += relative_speed * self.delta_t - 0.5*action * self.delta_t**2
         
         # Ensure distance does not exceed maximum or fall below zero
         distance_to_lead = np.clip(distance_to_lead, 0, self.max_distance)
 
         # Update state with new values
-        self.state = np.array([ego_speed, distance_to_lead, lead_speed, desired_distance])
+        self.state = np.array([ego_speed, distance_to_lead])
 
         # Calculate reward based on how close the ego vehicle is to the desired following distance
-        reward = -abs(distance_to_lead - desired_distance) - 0.1 * abs(acceleration)
+        reward = -abs(distance_to_lead) - 0.1 * abs(acceleration)
 
         done = False  # Continuous task; no terminal state
 
@@ -81,6 +77,4 @@ class CarFollowingEnv(gym.Env):
         return {
             "current_ego_speed": self.state[0],
             "distance_to_lead": self.state[1],
-            "lead_vehicle_speed": self.state[2],
-            "desired_distance": self.state[3]
         }
