@@ -46,7 +46,9 @@ agent:
   obs_dim: 0 # To be updated after loading the environment
   action_dim: 0 # To be updated after loading the environment
   critic_cfg:
-    _target_: agent.softq_models.OfflineQNetwork
+    _target_: agent.softq_models.SimpleQNetwork
+    obs_dim: 0
+    action_dim: 0
   critic_lr: 1e-4
   critic_betas: [0.9, 0.999]
   init_temp: 0.01
