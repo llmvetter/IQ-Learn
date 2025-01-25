@@ -2,6 +2,7 @@ import random
 import types
 
 import torch
+import pickle
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -16,7 +17,7 @@ from utils.utils import average_dicts, get_concat_samples, soft_update, hard_upd
 from iq import iq_loss
 
 def main():
-
+    save_path = "C:/Users/lenna/Documents/IRL/IQ-Learn/results/trained_agent.pkl"
     args = OmegaConf.load('C:/Users/lenna/Documents/IRL/IQ-Learn/conf/config.yaml')
 
     random.seed(args.seed)
@@ -104,8 +105,13 @@ def main():
             if done:
                 break
             state = next_state
-        
+    
         print(f'train/epoch: {epoch}')
+    
+    #safe agent
+    with open(save_path, "wb") as f:
+        pickle.dump(agent, f)
+
     # Plot the losses
     plt.figure(figsize=(12, 6))
     plt.plot(loss_tracker["learn_step"], loss_tracker["softq_loss"], label="SoftQ Loss", alpha=0.7)
