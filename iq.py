@@ -14,29 +14,27 @@ def iq_loss(agent, current_Q, current_v, next_v, batch):
     obs, next_obs, action, env_reward, done, is_expert = batch
 
     loss_dict = {}
-    # keep track of value of initial states
-    v0 = agent.getV(obs[is_expert.squeeze(1), ...]).mean()
-    loss_dict['v0'] = v0.item()
 
     #  calculate 1st term for IQ loss
     #  -E_(ρ_expert)[Q(s, a) - γV(s')]
     y = (1 - done) * gamma * next_v
     reward = (current_Q - y)[is_expert]
+    div_type = getattr(args.method, 'div', None)
 
     with torch.no_grad():
         # Use different divergence functions (For χ2 divergence we instead add a third bellmann error-like term)
-        if args.method.div == "hellinger":
+        if div_type == "hellinger":
             phi_grad = 1/(1+reward)**2
-        elif args.method.div == "kl":
+        elif div_type == "kl":
             # original dual form for kl divergence (sub optimal)
             phi_grad = torch.exp(-reward-1)
-        elif args.method.div == "kl2":
+        elif div_type == "kl2":
             # biased dual form for kl divergence
             phi_grad = F.softmax(-reward, dim=0) * reward.shape[0]
-        elif args.method.div == "kl_fix":
+        elif div_type == "kl_fix":
             # our proposed unbiased form for fixing kl divergence
             phi_grad = torch.exp(-reward)
-        elif args.method.div == "js":
+        elif div_type == "js":
             # jensen–shannon
             phi_grad = torch.exp(-reward)/(2 - torch.exp(-reward))
         else:
@@ -58,13 +56,6 @@ def iq_loss(agent, current_Q, current_v, next_v, batch):
         value_loss = (current_v - y).mean()
         loss += value_loss
         loss_dict['value_loss'] = value_loss.item()
-
-    elif args.method.loss == "v0":
-        # alternate sampling using only initial states (works offline but usually suboptimal than `value_expert` startegy)
-        # (1-γ)E_(ρ0)[V(s0)]
-        v0_loss = (1 - gamma) * v0
-        loss += v0_loss
-        loss_dict['v0_loss'] = v0_loss.item()
 
     # alternative sampling strategies for the sake of completeness but are usually suboptimal in practice
     # elif args.method.loss == "value_policy":
