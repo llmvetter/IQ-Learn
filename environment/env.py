@@ -62,7 +62,7 @@ class CarFollowingEnv(gym.Env):
         self.state = np.array([ego_speed, distance_to_lead])
 
         # Calculate reward based on how close the ego vehicle is to the desired following distance
-        reward = -abs(distance_to_lead) - 0.1 * abs(acceleration)
+        reward = 0
 
         done = False  # Continuous task; no terminal state
 
