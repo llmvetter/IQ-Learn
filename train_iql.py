@@ -1,5 +1,4 @@
 import random
-import types
 
 import torch
 import pickle
@@ -8,17 +7,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from omegaconf import OmegaConf
 
-from make_envs import make_env
+from environment.make_envs import make_env
 from agent.softq import SoftQ
 from dataset.memory import Memory
 from dataset.preprocessor import Preprocessor
 from dataset.expert_dataset import ExpertDataset
-from utils.utils import average_dicts, get_concat_samples, soft_update, hard_update
-from iq import iq_loss
+from utils.utils import get_concat_samples
 
 def main():
     save_path = "C:/Users/lenna/Documents/IRL/IQ-Learn/results/trained_agent.pkl"
-    args = OmegaConf.load('C:/Users/lenna/Documents/IRL/IQ-Learn/conf/config.yaml')
+    args = OmegaConf.load('C:/Users/lenna/Documents/IRL/IQ-Learn/config/config.yaml')
 
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -76,12 +74,12 @@ def main():
 
             if online_memory_replay.size() > INITIAL_MEMORY:
                 if begin_learn is False:
-                    print('Learn begins!')
+                    print('Starting training loop!')
                     begin_learn = True
 
                 learn_steps += 1
                 if learn_steps == LEARN_STEPS:
-                    print('Finished!')
+                    print('Finished training loop!')
                     return
 
                 losses = agent.iq_update(
@@ -109,6 +107,7 @@ def main():
     #safe agent
     with open(save_path, "wb") as f:
         pickle.dump(agent, f)
+    print(f'Agent has been saved at: {save_path}')
 
     # Plot the losses
     plt.figure(figsize=(12, 6))
