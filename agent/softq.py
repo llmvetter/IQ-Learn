@@ -58,11 +58,11 @@ class SoftQ(object):
         with torch.no_grad():
             q = self.q_net(state)
             dist = F.softmax(q/self.alpha, dim=1)
-            # if sample:
-            dist = Categorical(dist)
-            action = dist.sample()  # if sample else dist.mean
-            # else:
-            #     action = torch.argmax(dist, dim=1)
+            if sample:
+                dist = Categorical(dist)
+                action = dist.sample()
+            else:
+                action = torch.argmax(dist, dim=1)
 
         return action.detach().cpu().numpy()[0]
 
