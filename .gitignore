@@ -1,3 +1,4 @@
 .iq-venv
 *.ipynb
 *.pyc
+__pycache__/
