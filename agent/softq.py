@@ -5,7 +5,8 @@ from torch.optim import Adam
 from torch.distributions import Categorical
 
 from agent.softq_models import SimpleQNetwork
-
+from utils.utils import average_dicts, get_concat_samples
+from iq import iq_loss
 
 class SoftQ(object):
     def __init__(self, batch_size, args):
@@ -113,6 +114,66 @@ class SoftQ(object):
 
         return {
             'loss/critic': critic_loss.item()}
+
+    def iq_update(self, policy_buffer, expert_buffer, step):
+        policy_batch = policy_buffer.get_samples(self.batch_size, self.device)
+        expert_batch = expert_buffer.get_samples(self.batch_size, self.device)
+
+        losses = self.iq_update_critic(policy_batch, expert_batch, step)
+
+        if self.actor and step % self.actor_update_frequency == 0:
+            if not self.args.agent.vdice_actor:
+
+                if self.args.offline:
+                    obs = expert_batch[0]
+                else:
+                    # Use both policy and expert observations
+                    obs = torch.cat([policy_batch[0], expert_batch[0]], dim=0)
+
+                if self.args.num_actor_updates:
+                    for i in range(self.args.num_actor_updates):
+                        actor_alpha_losses = self.update_actor_and_alpha(obs, step)
+
+                losses.update(actor_alpha_losses)
+        return losses
+    
+    def iq_update_critic(self, policy_batch, expert_batch, step):
+        args = self.args
+        policy_obs, policy_next_obs, policy_action, policy_reward, policy_done = policy_batch
+        expert_obs, expert_next_obs, expert_action, expert_reward, expert_done = expert_batch
+
+        if args.only_expert_states:
+            # Use policy actions instead of experts actions for IL with only observations
+            expert_batch = expert_obs, expert_next_obs, policy_action, expert_reward, expert_done
+
+        batch = get_concat_samples(policy_batch, expert_batch, args)
+        obs, next_obs, action = batch[0:3]
+
+        agent = self
+        current_V = self.getV(obs)
+        if args.train.use_target:
+            with torch.no_grad():
+                next_V = self.get_targetV(next_obs)
+        else:
+            next_V = self.getV(next_obs)
+
+        if "DoubleQ" in self.args.q_net._target_:
+            current_Q1, current_Q2 = self.critic(obs, action, both=True)
+            q1_loss, loss_dict1 = iq_loss(agent, current_Q1, current_V, next_V, batch)
+            q2_loss, loss_dict2 = iq_loss(agent, current_Q2, current_V, next_V, batch)
+            critic_loss = 1/2 * (q1_loss + q2_loss)
+            # merge loss dicts
+            loss_dict = average_dicts(loss_dict1, loss_dict2)
+        else:
+            current_Q = self.critic(obs, action)
+            critic_loss, loss_dict = iq_loss(agent, current_Q, current_V, next_V, batch)
+
+        # Optimize the critic
+        self.critic_optimizer.zero_grad()
+        critic_loss.backward()
+        # step critic
+        self.critic_optimizer.step()
+        return loss_dict
 
     # Save model parameters
     def save(self, path, suffix=""):
