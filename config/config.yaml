@@ -13,27 +13,15 @@ only_expert_states: False
 
 train:
   batch: 32
-  epochs: 20
+  epochs: 200
   use_target: False
   soft_update: False
 
-expert:
-  demos: 1
-  subsample_freq: 1
-
-eval:
-  policy: null
-  threshold: null
-  use_baselines: False
-  eps: 20
-  transfer: False
-  expert_env: ""
-
 env:
   name: CarFollowingEnv
-  replay_mem: 50000
+  replay_mem: 25000
   initial_mem: 1280
-  eps_steps: 1000
+  eps_steps: 500
   eps_window: 100
   learn_steps: 5e5
   eval_interval: 5e3
@@ -44,10 +32,9 @@ method:
   constrain: False
   grad_pen: False
   tanh: False
-  regularize: False
-  div:
-  chi: True
-  alpha: 0.5
+  regularize: True
+  div: chi
+  alpha: 0.8
   lambda_gp: 10
   mix_coeff: 1
 
@@ -55,12 +42,12 @@ agent:
   name: softq
   class: agent.softq.SoftQ
   obs_dim: 0 # To be updated after loading the environment
-  action_dim: 0 # To be updated after loading the environment
+  action_dim: 5 # To be updated after loading the environment
   critic_cfg:
     _target_: agent.softq_models.SimpleQNetwork
     obs_dim: 0
-    action_dim: 0
-  critic_lr: 1e-4
+    action_dim: 5
+  critic_lr: 2e-4
   critic_betas: [0.9, 0.999]
   init_temp: 0.01
   critic_target_update_frequency: 4
