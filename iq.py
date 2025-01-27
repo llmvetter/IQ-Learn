@@ -87,10 +87,9 @@ def iq_loss(agent, current_Q, current_v, next_v, batch):
         loss_dict['gp_loss'] = gp_loss.item()
         loss += gp_loss
 
-    if args.method.div == "chi" or args.method.chi:  # TODO: Deprecate method.chi argument for method.div
+    if args.method.div == "chi":
         # Use χ2 divergence (calculate the regularization term for IQ loss using expert states) (works offline)
         y = (1 - done) * gamma * next_v
-
         reward = current_Q - y
         chi2_loss = 1/(4 * args.method.alpha) * (reward**2)[is_expert].mean()
         loss += chi2_loss
