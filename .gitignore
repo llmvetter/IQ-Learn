@@ -1,4 +1,5 @@
 .iq-venv
 *.ipynb
 *.pyc
+*.pkl
 __pycache__/
