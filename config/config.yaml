@@ -1,30 +1,21 @@
-exp_name: ""
-project_name: ${env.name}
-
-cuda_deterministic: False
-device: cpu
-
-gamma: 0.99
+gamma: 0.97
 seed: 42
-pretrain: null
-
-num_seed_steps: 0
 only_expert_states: False
 
 train:
-  batch: 32
-  epochs: 200
-  use_target: False
-  soft_update: False
+  epochs: 100
+  episodes: 300
+  env_steps: 200
+  learn_steps: 5000
 
 env:
-  name: CarFollowingEnv
-  replay_mem: 25000
-  initial_mem: 1280
-  eps_steps: 500
-  eps_window: 100
-  learn_steps: 5e5
-  eval_interval: 5e3
+  name: CarFollowing
+  max_v: 30
+  max_g: 100
+  max_a: 0.05
+  delta_t: 0.1
+  policy_memory: 5000
+  expert_memory: 5000
 
 method:
   type: iq
@@ -34,9 +25,7 @@ method:
   tanh: False
   regularize: True
   div: chi
-  alpha: 0.8
-  lambda_gp: 10
-  mix_coeff: 1
+  alpha: 5
 
 agent:
   name: softq
@@ -47,7 +36,7 @@ agent:
     _target_: agent.softq_models.SimpleQNetwork
     obs_dim: 0
     action_dim: 5
-  critic_lr: 2e-4
+  critic_lr: 2e-3
   critic_betas: [0.9, 0.999]
   init_temp: 0.01
   critic_target_update_frequency: 4
