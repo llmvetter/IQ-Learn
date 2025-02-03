@@ -11,6 +11,9 @@ class Preprocessor():
     ):
         self.mdp = mdp
         self.min_speed = 2
+        self.a_map = np.array(
+            [v for v in self.mdp.action_mapping.values()]
+        )
 
     def create_filtered_trajectory(
             self,
@@ -41,6 +44,7 @@ class Preprocessor():
 
         # Actions: Expert acceleration
         actions = filtered_df[f'expert{expert_num}_acceleration'].values
+        mapped_actions = [self.a_map[np.abs(self.a_map - action).argmin()] for action in actions]
 
         # Rewards: Placeholder (zero rewards for now)
         rewards = np.zeros_like(actions)
@@ -56,7 +60,7 @@ class Preprocessor():
         # Length of trajectory
         length = len(filtered_df)
 
-        return states, next_states, actions, rewards, dones, length
+        return states, next_states, mapped_actions, rewards, dones, length
 
     def load(self, path: str) -> dict[str, list[str, Any]]:
         """
