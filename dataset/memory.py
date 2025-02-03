@@ -15,10 +15,14 @@ class Memory(object):
     def add(self, experience) -> None:
         self.buffer.append(experience)
 
-    def size(self):
+    def size(self) -> int:
         return len(self.buffer)
 
-    def sample(self, batch_size: int, continuous: bool = True):
+    def sample(
+            self,
+            batch_size: int=1,
+            continuous: bool = True,
+    ) -> torch.FloatTensor:
         if batch_size > len(self.buffer):
             batch_size = len(self.buffer)
         if continuous:
@@ -28,19 +32,14 @@ class Memory(object):
             indexes = np.random.choice(np.arange(len(self.buffer)), size=batch_size, replace=False)
             return [self.buffer[i] for i in indexes]
 
-    def clear(self):
+    def clear(self) -> None:
         self.buffer.clear()
 
-    def save(self, path):
-        b = np.asarray(self.buffer)
-        print(b.shape)
-        np.save(path, b)
-
-    def load(self, data: ExpertDataset):
+    def load(self, data: ExpertDataset) -> None:
         for i in range(len(data)):
             self.add(data[i])
 
-    def get_samples(self, batch_size, device):
+    def get_samples(self, batch_size: int=1) -> torch.FloatTensor:
         batch = self.sample(batch_size, False)
 
         batch_state, batch_next_state, batch_action, batch_reward, batch_done = zip(
@@ -50,12 +49,12 @@ class Memory(object):
         batch_next_state = np.array(batch_next_state)
         batch_action = np.array(batch_action)
 
-        batch_state = torch.as_tensor(batch_state, dtype=torch.float, device=device)
-        batch_next_state = torch.as_tensor(batch_next_state, dtype=torch.float, device=device)
-        batch_action = torch.as_tensor(batch_action, dtype=torch.float, device=device)
+        batch_state = torch.as_tensor(batch_state, dtype=torch.float)
+        batch_next_state = torch.as_tensor(batch_next_state, dtype=torch.float)
+        batch_action = torch.as_tensor(batch_action, dtype=torch.float)
         if batch_action.ndim == 1:
             batch_action = batch_action.unsqueeze(1)
-        batch_reward = torch.as_tensor(batch_reward, dtype=torch.float, device=device).unsqueeze(1)
-        batch_done = torch.as_tensor(batch_done, dtype=torch.float, device=device).unsqueeze(1)
+        batch_reward = torch.as_tensor(batch_reward, dtype=torch.float).unsqueeze(1)
+        batch_done = torch.as_tensor(batch_done, dtype=torch.float).unsqueeze(1)
 
         return batch_state, batch_next_state, batch_action, batch_reward, batch_done
