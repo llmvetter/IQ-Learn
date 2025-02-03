@@ -1,0 +1,45 @@
+device: cpu
+
+gamma: 0.99
+seed: 42
+
+num_seed_steps: 0
+only_expert_states: False
+
+train:
+  batch: 32
+  epochs: 100
+  use_target: False
+  soft_update: False
+
+method:
+  type: iq
+  loss: value
+  constrain: False
+  grad_pen: False
+  tanh: False
+  regularize: True
+  div: chi
+  alpha: 0.8
+  lambda_gp: 10
+  mix_coeff: 1
+
+agent:
+  name: softq
+  class: agent.softq.SoftQ
+  obs_dim: 1
+  action_dim: 4
+  critic_cfg:
+    _target_: agent.softq_models.SimpleQNetwork
+    obs_dim: 1
+    action_dim: 4
+  critic_lr: 2e-4
+  critic_betas: [0.9, 0.999]
+  init_temp: 0.01
+  critic_target_update_frequency: 4
+  critic_tau: 0.1
+
+q_net:
+  _target_: agent.softq_models.SimpleQNetwork
+  obs_dim: ${agent.obs_dim}
+  action_dim: ${agent.action_dim}
