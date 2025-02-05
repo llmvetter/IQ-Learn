@@ -138,25 +138,24 @@ class SoftQ(object):
         y = (1 - done) * self.gamma * self.getV(next_obs)
 
         reward = (current_Q - y)[is_expert.squeeze(-1)]
-        loss = -(reward).mean()
+        loss_1 = -(reward).mean()
 
         # 2nd term for our loss (use expert and policy states): E_(ρ)[Q(s,a) - γV(s')]
         value_loss = (self.getV(obs) - y).mean()
-        loss += value_loss
 
         # Use χ2 divergence (adds a extra term to the loss)
         # Higher alpha leads to more regularization but slower learning
         chi2_loss = 1/(4 * self.args.method.alpha) * (reward**2).mean()
-        loss += chi2_loss
         #####
 
+        total_loss = loss_1 + value_loss + chi2_loss
         #optimize critic
         self.critic_optimizer.zero_grad()
-        loss.backward()
+        total_loss.backward()
         #step critic
         self.critic_optimizer.step()
 
-        return loss
+        return total_loss, loss_1, value_loss, chi2_loss
 
     def infer_q(self, state, action):
         state = torch.FloatTensor(state).unsqueeze(0)
