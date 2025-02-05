@@ -10,7 +10,7 @@ class Preprocessor():
             mdp: CarFollowingEnv,
     ):
         self.mdp = mdp
-        self.min_speed = 2
+        self.min_speed = 5
         self.a_map = np.array(
             [v for v in self.mdp.action_mapping.values()]
         )
@@ -44,7 +44,9 @@ class Preprocessor():
 
         # Actions: Expert acceleration
         actions = filtered_df[f'expert{expert_num}_acceleration'].values
-        mapped_actions = [self.a_map[np.abs(self.a_map - action).argmin()] for action in actions]
+        a_values = np.array(list(self.mdp.action_mapping.values()))
+        a_keys = np.array(list(self.mdp.action_mapping.keys()))
+        mapped_actions = a_keys[np.abs(actions[:, np.newaxis] - a_values).argmin(axis=1)]
 
         # Rewards: Placeholder (zero rewards for now)
         rewards = np.zeros_like(actions)
