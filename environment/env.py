@@ -9,17 +9,17 @@ class CarFollowingEnv(gym.Env):
             self,
             max_speed=30,
             max_distance=100,
-            max_acceleration=0.5,
+            actions: list[float]= [-0.2, -0.1, -0.05, 0, 0.05, 0.1, 0.2],
             delta_t=0.1,
     ) -> None:
         # Environment parameters
         super().__init__()
         self.max_speed = max_speed
         self.max_distance = max_distance
-        self.max_acceleration = max_acceleration
         self.delta_t = delta_t
 
-        self.action_space = gym.spaces.Discrete(5)
+        self.action_space = gym.spaces.Discrete(len(actions))
+        self.action_mapping = {i: actions[i] for i in range(len(actions))}
 
         # state: [ego speed, distance to lead vehicle]
         self.observation_space = gym.spaces.Box(
@@ -27,15 +27,6 @@ class CarFollowingEnv(gym.Env):
             high=np.array([self.max_speed, self.max_distance]),
             dtype=np.float32
         )
-
-        self.action_mapping = {
-            0: -self.max_acceleration,
-            1: -self.max_acceleration / 2,
-            2: 0,
-            3: self.max_acceleration / 2,
-            4: self.max_acceleration
-        }
-
         self.state = None
 
     def reset(

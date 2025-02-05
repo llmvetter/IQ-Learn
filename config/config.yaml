@@ -3,10 +3,10 @@ seed: 42
 only_expert_states: False
 
 train:
-  epochs: 100
+  epochs: 300
   episodes: 300
   env_steps: 200
-  learn_steps: 5000
+  learn_steps: 10000
 
 env:
   name: CarFollowing
@@ -25,22 +25,22 @@ method:
   tanh: False
   regularize: True
   div: chi
-  alpha: 5
+  alpha: 3
 
 agent:
   name: softq
   class: agent.softq.SoftQ
   obs_dim: 0 # To be updated after loading the environment
-  action_dim: 5 # To be updated after loading the environment
+  action_dim: 7 # To be updated after loading the environment
   critic_cfg:
     _target_: agent.softq_models.SimpleQNetwork
     obs_dim: 0
-    action_dim: 5
-  critic_lr: 2e-3
+    action_dim: 7
+  critic_lr: 5e-4
   critic_betas: [0.9, 0.999]
   init_temp: 0.01
-  critic_target_update_frequency: 4
-  critic_tau: 0.1
+  critic_target_update_frequency: 8
+  critic_tau: 0.2
 
 q_net:
   _target_: agent.softq_models.SimpleQNetwork
