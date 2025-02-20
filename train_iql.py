@@ -10,7 +10,7 @@ from omegaconf import OmegaConf
 from environment.make_envs import make_env
 from agent.softq import SoftQ
 from dataset.memory import Memory
-from dataset.preprocessor import Preprocessor
+from dataset.preprocessor.preprocessor import NapoliPreprocessor
 from dataset.expert_dataset import ExpertDataset
 from utils.utils import get_concat_samples
 
@@ -38,8 +38,8 @@ def main():
         args=args,
     )
 
-    preprocessor = Preprocessor(env)
-    expert_trajectories = preprocessor.load("C:/Users/lenna/Documents/IRL/data/TrajData_Punzo_Napoli/drivetest1.FCdata")
+    preprocessor = NapoliPreprocessor(env)
+    expert_trajectories = preprocessor.preprocess()
     ex_data = ExpertDataset(expert_trajectories=expert_trajectories)
     expert_memory_replay = Memory(REPLAY_MEMORY//2, args.seed)
     expert_memory_replay.load(ex_data)

@@ -38,7 +38,7 @@ class CarFollowingEnv(gym.Env):
 
         self.state = np.array([
             np.random.uniform(5, self.max_speed-5),  # ego speed
-            np.random.uniform(10, self.max_distance/2),  # distance to lead vehicle
+            np.random.uniform(5, self.max_distance/2),  # distance to lead vehicle
         ], dtype=np.float32)
         return self._get_obs(), self._get_info()
 
@@ -62,8 +62,8 @@ class CarFollowingEnv(gym.Env):
         else:
             relative_speed = np.random.normal(0, 0.8628)
             distance_next_mean = distance_to_lead - (relative_speed*self.delta_t) - (0.5*action*self.delta_t**2) #ego(v) - lead(v)
-            next_distance = np.random.normal(loc=distance_next_mean, scale=0.5)
-        next_distance = np.clip(next_distance, 0, self.max_distance)
+            #next_distance = np.random.normal(loc=distance_next_mean, scale=0.5)
+        next_distance = np.clip(distance_next_mean , 0, self.max_distance)
 
         # Update state
         self.state = np.array([ego_speed, next_distance], dtype=np.float32)

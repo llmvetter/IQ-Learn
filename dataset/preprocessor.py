@@ -143,13 +143,17 @@ class MilanoPreprocessor(BasePreprocessor):
     ) -> dict[str, list[str, Any]]:
         subset = df[(df['Leader'] == leader) & (df['Follower'] == follower)]
         subset = subset.sort_values(by="Time [s]").reset_index(drop=True)
-        states = np.array(list(zip(subset["Follower Speed"], subset["Follower Tan. Acc."])))
-        next_states = np.array(list(zip(subset["Follower Speed"].shift(-1), subset["Follower Tan. Acc."].shift(-1))))
+        states = np.array(list(zip(subset["Follower Speed"], subset["gap[m]"])))
+        next_states = np.array(list(zip(subset["Follower Speed"].shift(-1), subset["gap[m]"].shift(-1))))
 
         states = states[:-1]
         next_states = next_states[:-1]
         
         actions = np.array(subset["Follower Tan. Acc."][:-1])
+        a_values = np.array(list(self.mdp.action_mapping.values()))
+        a_keys = np.array(list(self.mdp.action_mapping.keys()))
+        mapped_actions = a_keys[np.abs(actions[:, np.newaxis] - a_values).argmin(axis=1)]
+
         rewards = np.zeros(len(actions))  # Maybe adjust for negative reward when too close
         dones = np.zeros(len(actions))  # Maybe adjust for done when too close
         length = len(actions)
@@ -157,7 +161,7 @@ class MilanoPreprocessor(BasePreprocessor):
         return {
             "states": states,
             "next_states": next_states,
-            "actions": actions,
+            "actions": mapped_actions,
             "rewards": rewards,
             "dones": dones,
             "length": length
@@ -166,7 +170,17 @@ class MilanoPreprocessor(BasePreprocessor):
     def preprocess(self, path: str) -> dict[str, list[str, Any]]:
         trajectories = []
         df_init = pd.read_csv(path)
-        df_reduced = df_init[['Time [s]', 'Leader', 'Follower', 'Leader Speed', 'Follower Speed', 'Leader Tan. Acc.', 'Follower Tan. Acc.', 'Relative speed', 'gap[m]']].copy()
+        df_reduced = df_init[[
+            'Time [s]',
+            'Leader',
+            'Follower',
+            'Leader Speed',
+            'Follower Speed',
+            'Leader Tan. Acc.',
+            'Follower Tan. Acc.',
+            'Relative speed',
+            'gap[m]',
+        ]].copy()
         df = self._filter_leader_follower_pairs(df = df_reduced)
         unique_pairs = df.groupby(["Leader", "Follower"]).size().reset_index()
 
