@@ -1,27 +1,25 @@
-gamma: 0.97
+gamma: 0.98
 seed: 42
-only_expert_states: False
 
 train:
-  epochs: 300
+  batch_size: 32
+  soft_update: True
+  epochs: 250
   episodes: 300
-  env_steps: 200
-  learn_steps: 10000
+  env_steps: 1
+  learn_steps: 100000
 
 env:
   name: CarFollowing
-  max_v: 30
-  max_g: 100
-  max_a: 0.05
-  delta_t: 0.1
-  policy_memory: 5000
-  expert_memory: 5000
+  max_v: 100
+  max_g: 200
+  delta_t: 0.3
+  policy_memory: 10000
+  expert_memory: 10000
 
 method:
   type: iq
   loss: value
-  constrain: False
-  grad_pen: False
   tanh: False
   regularize: True
   div: chi
@@ -31,16 +29,14 @@ agent:
   name: softq
   class: agent.softq.SoftQ
   obs_dim: 0 # To be updated after loading the environment
-  action_dim: 7 # To be updated after loading the environment
+  action_dim: 9 # To be updated after loading the environment
   critic_cfg:
     _target_: agent.softq_models.SimpleQNetwork
     obs_dim: 0
-    action_dim: 7
-  critic_lr: 5e-4
+    action_dim: 9
+  critic_lr: 2e-5
   critic_betas: [0.9, 0.999]
-  init_temp: 0.01
-  critic_target_update_frequency: 8
-  critic_tau: 0.2
+  init_temp: 0.5
 
 q_net:
   _target_: agent.softq_models.SimpleQNetwork

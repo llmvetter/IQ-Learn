@@ -20,8 +20,12 @@ class Trainer():
         self.env = environment
         self.data = expert_data
         # Init Actor
-        self.config.agent.critic_cfg.obs_dim = self.env.observation_space.shape[0]
-        self.config.agent.critic_cfg.action_dim = self.env.action_space.n.item()
+        if self.config.env.name == 'CarFollowing':
+            self.config.agent.critic_cfg.obs_dim = self.env.observation_space.shape[0]
+            self.config.agent.critic_cfg.action_dim = self.env.action_space.n.item()
+        if self.config.env.name == 'FrozenLake':
+            self.config.agent.critic_cfg.obs_dim = 64
+            self.config.agent.critic_cfg.action_dim = 4
         self.agent = SoftQ(args=self.config)
 
     def train(self):
@@ -31,7 +35,7 @@ class Trainer():
         expert_memory.load(self.data)
 
         steps = 0
-        learn_steps = 0
+        learn_step = 0
         begin_learn = False
 
         # Init trackers
@@ -69,16 +73,20 @@ class Trainer():
                         begin_learn = True
                     
                     # Train for learn steps
-                    learn_steps += 1
-                    if learn_steps == self.config.train.learn_steps:
+                    learn_step += 1
+                    if learn_step == self.config.train.learn_steps:
                         print('Finished training loop!')
                         continue
                     
-                    policy_sample = policy_memory.get_samples()
-                    expert_sample = expert_memory.get_samples()
+                    policy_batch = policy_memory.get_samples(
+                        batch_size=self.config.train.batch_size,
+                    )
+                    expert_batch = expert_memory.get_samples(
+                        batch_size = self.config.train.batch_size,
+                    )
                     total_loss, loss_1, value_loss, chi2_loss = self.agent.iq_learn_update(
-                        policy_sample=policy_sample,
-                        expert_sample=expert_sample,
+                        policy_batch=policy_batch,
+                        expert_batch=expert_batch,
                     )
                 
                 if done:

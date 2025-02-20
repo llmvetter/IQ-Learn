@@ -1,3 +1,4 @@
+from typing import Any
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -22,14 +23,12 @@ class SoftQNetwork(nn.Module):
         return x
 
 class SoftQ(object):
-    def __init__(self, args):
+    def __init__(self, args, batch_size: int = 32):
         self.gamma = args.gamma
         self.args = args
+        self.batch_size = batch_size
         agent_cfg = args.agent
-        self.actor = None
-        self.critic_tau = agent_cfg.critic_tau
 
-        self.critic_target_update_frequency = agent_cfg.critic_target_update_frequency
         self.log_alpha = torch.tensor(np.log(agent_cfg.init_temp))
         self.q_net = SoftQNetwork(
             obs_dim=args.agent.critic_cfg.obs_dim,
@@ -126,16 +125,21 @@ class SoftQ(object):
         return {'loss/critic': critic_loss.item()}
 
     # Minimal IQ-Learn objective
-    def iq_learn_update(self, policy_sample, expert_sample):
+    def iq_learn_update(
+            self,
+            policy_batch: torch.FloatTensor,
+            expert_batch: torch.FloatTensor,
+    ) -> tuple[Any]:
+
         # Inverse Q Learning update of critic network
         obs, next_obs, action, reward, done, is_expert = get_concat_samples(
-            policy_sample, expert_sample)
+            policy_batch, expert_batch)
 
         ######
         # IQ-Learn minimal implementation with X^2 divergence
         # Calculate 1st term of loss: -E_(ρ_expert)[Q(s, a) - γV(s')]
         current_Q = self.critic(obs, action)
-        y = (1 - done) * self.gamma * self.getV(next_obs)
+        y = (1 - done.float()) * self.gamma * self.getV(next_obs)
 
         reward = (current_Q - y)[is_expert.squeeze(-1)]
         loss_1 = -(reward).mean()
@@ -173,9 +177,12 @@ class SoftQ(object):
         return v.numpy()
     
 
-def get_concat_samples(policy_sample, expert_sample):
-    online_s, online_next_s, online_a, online_r, online_done = policy_sample
+def get_concat_samples(
+        policy_sample: tuple[Any],
+        expert_sample: tuple[Any],
+) -> tuple[Any]:
 
+    online_s, online_next_s, online_a, online_r, online_done = policy_sample
     expert_s, expert_next_s, expert_a, expert_r, expert_done = expert_sample
 
     batch_state = torch.cat([online_s, expert_s], dim=0)
@@ -187,4 +194,3 @@ def get_concat_samples(policy_sample, expert_sample):
                            torch.ones_like(expert_r, dtype=torch.bool)], dim=0)
 
     return batch_state, batch_next_state, batch_action, batch_reward, batch_done, is_expert
-
