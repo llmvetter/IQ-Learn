@@ -2,12 +2,12 @@ gamma: 0.98
 seed: 42
 
 train:
-  batch_size: 32
+  batch_size: 64
   soft_update: True
-  epochs: 250
-  episodes: 300
+  epochs: 200
+  episodes: 200
   env_steps: 1
-  learn_steps: 100000
+  learn_steps: 10000
 
 env:
   name: CarFollowing
@@ -23,20 +23,20 @@ method:
   tanh: False
   regularize: True
   div: chi
-  alpha: 3
+  alpha: 5
 
 agent:
   name: softq
   class: agent.softq.SoftQ
   obs_dim: 0 # To be updated after loading the environment
-  action_dim: 9 # To be updated after loading the environment
+  action_dim: 0 # To be updated after loading the environment
   critic_cfg:
     _target_: agent.softq_models.SimpleQNetwork
     obs_dim: 0
-    action_dim: 9
-  critic_lr: 2e-5
+    action_dim: 0
+  critic_lr: 5e-5
   critic_betas: [0.9, 0.999]
-  init_temp: 0.5
+  init_temp: 0.05
 
 q_net:
   _target_: agent.softq_models.SimpleQNetwork
