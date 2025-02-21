@@ -2,20 +2,21 @@ gamma: 0.98
 seed: 42
 
 train:
-  batch_size: 64
+  batch_size: 128
   soft_update: True
-  epochs: 200
-  episodes: 200
-  env_steps: 1
-  learn_steps: 10000
+  epochs: 350
+  episodes: 500
+  env_steps: 200
+  learn_steps: 20000
 
 env:
   name: CarFollowing
   max_v: 100
   max_g: 200
+  max_rel_v: 75
   delta_t: 0.3
   policy_memory: 10000
-  expert_memory: 10000
+  expert_memory: 100000
 
 method:
   type: iq
@@ -23,7 +24,7 @@ method:
   tanh: False
   regularize: True
   div: chi
-  alpha: 5
+  alpha: 3
 
 agent:
   name: softq
@@ -36,7 +37,7 @@ agent:
     action_dim: 0
   critic_lr: 5e-5
   critic_betas: [0.9, 0.999]
-  init_temp: 0.05
+  init_temp: 0.5
 
 q_net:
   _target_: agent.softq_models.SimpleQNetwork
