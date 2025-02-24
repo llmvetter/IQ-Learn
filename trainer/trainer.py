@@ -3,6 +3,7 @@ from tqdm import tqdm
 from omegaconf import OmegaConf
 
 from environment.env import CarFollowingEnv
+from utils.utils import soft_update
 from dataset.expert_dataset import ExpertDataset
 from dataset.memory import Memory
 from agent.softq import SoftQ
@@ -88,6 +89,12 @@ class Trainer():
                         policy_batch=policy_batch,
                         expert_batch=expert_batch,
                     )
+                    if self.config.agent.target_update_frequency and learn_step % self.config.agent.target_update_frequency == 0:
+                        soft_update(
+                            self.agent.q_net,
+                            self.agent.target_net,
+                            self.config.agent.tau,
+                        )
                 
                 if done:
                     break
