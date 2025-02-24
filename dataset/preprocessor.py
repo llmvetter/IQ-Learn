@@ -128,8 +128,7 @@ class NapoliPreprocessor(BasePreprocessor):
         return expert_data
 
 class MilanoPreprocessor(BasePreprocessor):
-
-    def _filter_leader_follower_pairs(self, df, min_entries=1000):
+    def _filter_leader_follower_pairs(self, df, min_entries=600):
         pair_counts = df.groupby(['Leader', 'Follower']).size()
         valid_pairs = pair_counts[pair_counts >= min_entries].index
         filtered_df = df[df.set_index(['Leader', 'Follower']).index.isin(valid_pairs)]
@@ -143,8 +142,16 @@ class MilanoPreprocessor(BasePreprocessor):
     ) -> dict[str, list[str, Any]]:
         subset = df[(df['Leader'] == leader) & (df['Follower'] == follower)]
         subset = subset.sort_values(by="Time [s]").reset_index(drop=True)
-        states = np.array(list(zip(subset["Follower Speed"], subset["gap[m]"])))
-        next_states = np.array(list(zip(subset["Follower Speed"].shift(-1), subset["gap[m]"].shift(-1))))
+        states = np.array(list(zip(
+            subset["Follower Speed"],
+            subset["gap[m]"],
+            subset["Relative speed"],
+        )))
+        next_states = np.array(list(zip(
+            subset["Follower Speed"].shift(-1),
+            subset["gap[m]"].shift(-1),
+            subset["Relative speed"].shift(-1),
+        )))
 
         states = states[:-1]
         next_states = next_states[:-1]
