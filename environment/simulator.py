@@ -6,7 +6,7 @@ class Simulator:
     def __init__(self):
         
         df = pd.read_csv("C:/Users/lenna/Documents/IRL/IQ-Learn/dataset/LF_data-2e5.csv")
-        historic_speeds = np.array(df['Relative speed'])
+        historic_speeds = np.array(df['Relative speed'])*0.27778
         self.kde = gaussian_kde(historic_speeds)
 
     def sample_relative_speed(self) -> float:
