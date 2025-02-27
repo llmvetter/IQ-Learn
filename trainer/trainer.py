@@ -54,17 +54,20 @@ class Trainer():
             # For each episode
             for _ in range(self.config.train.episodes):
 
-                # sample random action from the environment
-                if steps < self.config.train.env_steps:
+                # sample random action from the environment until
+                # enough samples are collected
+                if steps < self.config.train.sampling_steps:
                     action = self.env.action_space.sample()
                 
-                # sample action from policy
+                # sample action from policy (= act according to policy)
                 else:
                     action = self.agent.choose_action(state, sample=True)
 
                 # take action in env
                 next_state, _, done, _, _ = self.env.step(action)
                 steps += 1
+
+                #fill up memory 
                 policy_memory.add((state, next_state, action, 0.0, done))
                 
                 # Start training once memory is full

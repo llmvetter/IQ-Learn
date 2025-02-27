@@ -4,11 +4,10 @@ only_expert_states: False
 
 train:
   batch_size: 16
-  soft_update: True
   epochs: 300
   episodes: 30
-  env_steps: 1
-  learn_steps: 8000
+  sampling_steps: 1
+  learn_steps: 5000
 
 env:
   name: FrozenLake
