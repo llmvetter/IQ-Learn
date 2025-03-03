@@ -41,7 +41,7 @@ class Evaluator():
         d_ego_init: int = 30,
      ) -> None:
 
-        if not leader_trajectory:
+        if leader_trajectory is None:
             leader_trajectory = self.sample_trajectory()
 
         follower_trajectory = []
