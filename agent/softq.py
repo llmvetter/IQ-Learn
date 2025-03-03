@@ -1,10 +1,12 @@
 from typing import Any
 import numpy as np
+import pickle
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
 from torch.optim import Adam
 from torch.distributions import Categorical
+from omegaconf import OmegaConf
 
 
 class SoftQNetwork(nn.Module):
@@ -202,3 +204,20 @@ def get_concat_samples(
                            torch.ones_like(expert_r, dtype=torch.bool)], dim=0)
 
     return batch_state, batch_next_state, batch_action, batch_reward, batch_done, is_expert
+
+def load_model(
+        model_pickle: str,
+        model_config_path: str,
+) -> SoftQ:
+    config = OmegaConf.load(model_config_path)
+    with open(model_pickle, "rb") as f:
+        saved_data = pickle.load(f)
+        # Restore model
+    soft_q = SoftQ(config)  # Recreate object with same args
+    soft_q.q_net.load_state_dict(saved_data["q_net"])
+    soft_q.target_net.load_state_dict(saved_data["target_net"])
+    soft_q.critic_optimizer.load_state_dict(saved_data["critic_optimizer"])
+    soft_q.log_alpha = saved_data["log_alpha"]  # Restore log_alpha
+
+    return soft_q
+
