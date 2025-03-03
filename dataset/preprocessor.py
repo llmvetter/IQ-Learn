@@ -130,7 +130,7 @@ class NapoliPreprocessor(BasePreprocessor):
 
 class MilanoPreprocessor(BasePreprocessor):
 
-    def _filter_leader_follower_pairs(self, df, min_entries=500):
+    def _filter_leader_follower_pairs(self, df, min_entries=800):
         pair_counts = df.groupby(['Leader', 'Follower']).size()
         valid_pairs = pair_counts[pair_counts >= min_entries].index
         filtered_df = df[df.set_index(['Leader', 'Follower']).index.isin(valid_pairs)]
