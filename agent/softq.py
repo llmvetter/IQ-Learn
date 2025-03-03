@@ -1,10 +1,12 @@
 from typing import Any
 import numpy as np
+import pickle
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
 from torch.optim import Adam
 from torch.distributions import Categorical
+from omegaconf import OmegaConf
 
 
 class SoftQNetwork(nn.Module):
@@ -27,9 +29,8 @@ class SoftQ(object):
         self.gamma = args.gamma
         self.args = args
         self.batch_size = batch_size
-        agent_cfg = args.agent
-
-        self.log_alpha = torch.tensor(np.log(agent_cfg.init_temp))
+        self.target_update_frequency = self.args.agent.target_update_frequency
+        self.log_alpha = torch.tensor(np.log(self.args.agent.init_temp))
         self.q_net = SoftQNetwork(
             obs_dim=args.agent.critic_cfg.obs_dim,
             action_dim=args.agent.critic_cfg.action_dim,
@@ -41,8 +42,11 @@ class SoftQ(object):
             args=args,
         )
         self.target_net.load_state_dict(self.q_net.state_dict())
-        self.critic_optimizer = Adam(self.q_net.parameters(), lr=agent_cfg.critic_lr,
-                                     betas=agent_cfg.critic_betas)
+        self.critic_optimizer = Adam(
+            self.q_net.parameters(),
+            lr=self.args.agent.critic_lr,
+            betas=self.args.agent.critic_betas,
+        )
         self.train()
         self.target_net.train()
 
@@ -85,7 +89,7 @@ class SoftQ(object):
             obs: torch.Tensor
     ) -> torch.Tensor:
         q = self.q_net(obs)
-        v = self.alpha * torch.logsumexp(q/self.alpha, dim=0, keepdim=True)
+        v = self.alpha * torch.logsumexp(q/self.alpha, dim=1, keepdim=True)
         return v
     
     def get_targetV(
@@ -93,7 +97,7 @@ class SoftQ(object):
             obs: torch.Tensor,
     ) -> torch.Tensor:
         q = self.target_net(obs)
-        target_v = self.alpha * torch.logsumexp(q/self.alpha, dim=0, keepdim=True)
+        target_v = self.alpha * torch.logsumexp(q/self.alpha, dim=1, keepdim=True)
         return target_v
 
     def critic(
@@ -139,7 +143,12 @@ class SoftQ(object):
         # IQ-Learn minimal implementation with X^2 divergence
         # Calculate 1st term of loss: -E_(ρ_expert)[Q(s, a) - γV(s')]
         current_Q = self.critic(obs, action)
-        y = (1 - done.float()) * self.gamma * self.getV(next_obs)
+
+        if self.target_update_frequency:
+            next_v = self.get_targetV(next_obs)
+        else:
+            next_v = self.getV(next_obs)
+        y = (1 - done.float()) * self.gamma * next_v
 
         reward = (current_Q - y)[is_expert.squeeze(-1)]
         loss_1 = -(reward).mean()
@@ -160,6 +169,7 @@ class SoftQ(object):
         self.critic_optimizer.step()
 
         return total_loss, loss_1, value_loss, chi2_loss
+    
 
     def infer_q(self, state, action):
         state = torch.FloatTensor(state).unsqueeze(0)
@@ -194,3 +204,20 @@ def get_concat_samples(
                            torch.ones_like(expert_r, dtype=torch.bool)], dim=0)
 
     return batch_state, batch_next_state, batch_action, batch_reward, batch_done, is_expert
+
+def load_model(
+        model_pickle: str,
+        model_config_path: str,
+) -> SoftQ:
+    config = OmegaConf.load(model_config_path)
+    with open(model_pickle, "rb") as f:
+        saved_data = pickle.load(f)
+        # Restore model
+    soft_q = SoftQ(config)  # Recreate object with same args
+    soft_q.q_net.load_state_dict(saved_data["q_net"])
+    soft_q.target_net.load_state_dict(saved_data["target_net"])
+    soft_q.critic_optimizer.load_state_dict(saved_data["critic_optimizer"])
+    soft_q.log_alpha = saved_data["log_alpha"]  # Restore log_alpha
+
+    return soft_q
+

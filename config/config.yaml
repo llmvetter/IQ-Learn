@@ -2,21 +2,20 @@ gamma: 0.98
 seed: 42
 
 train:
-  batch_size: 128
-  soft_update: True
-  epochs: 350
-  episodes: 500
-  env_steps: 200
+  batch_size: 256
+  epochs: 200 #number of epochs
+  episodes: 300 #number of environemnt episodes per epoch
+  sampling_steps: 100 #number of environment sampling steps per episode
   learn_steps: 20000
 
 env:
   name: CarFollowing
-  max_v: 100
-  max_g: 200
-  max_rel_v: 75
+  max_v: 40 # in m/s
+  max_g: 150 # in m
+  max_rel_v: 30
   delta_t: 0.3
-  policy_memory: 10000
-  expert_memory: 100000
+  policy_memory: 2000
+  expert_memory: 10000
 
 method:
   type: iq
@@ -37,7 +36,9 @@ agent:
     action_dim: 0
   critic_lr: 5e-5
   critic_betas: [0.9, 0.999]
-  init_temp: 0.5
+  init_temp: 0.1
+  target_update_frequency: 1 # 1 equals soft update, >1 for hard updates
+  tau: 0.01 # Percentage of parameters to copy q_net into target, tau=1 equals hard update
 
 q_net:
   _target_: agent.softq_models.SimpleQNetwork

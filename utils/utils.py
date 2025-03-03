@@ -1,5 +1,11 @@
+from tqdm import tqdm
+import numpy as np
 import torch
 from torch import nn
+import matplotlib.pyplot as plt
+
+from agent.softq import SoftQ
+from environment.env import CarFollowingEnv
 
 
 class eval_mode(object):
@@ -16,35 +22,6 @@ class eval_mode(object):
         for model, state in zip(self.models, self.prev_states):
             model.train(state)
         return False
-
-
-def evaluate(actor, env, num_episodes=10, vis=True):
-    """Evaluates the policy.
-    Args:
-      actor: A policy to evaluate.
-      env: Environment to evaluate the policy on.
-      num_episodes: A number of episodes to average the policy on.
-    Returns:
-      Averaged reward and a total number of steps.
-    """
-    total_timesteps = []
-    total_returns = []
-
-    while len(total_returns) < num_episodes:
-        state = env.reset()
-        done = False
-
-        with eval_mode(actor):
-            while not done:
-                action = actor.choose_action(state, sample=False)
-                next_state, reward, done, info = env.step(action)
-                state = next_state
-
-                if 'episode' in info.keys():
-                    total_returns.append(info['episode']['r'])
-                    total_timesteps.append(info['episode']['l'])
-
-    return total_returns, total_timesteps
 
 
 def weighted_softmax(x, weights):
@@ -72,36 +49,6 @@ def weight_init(m):
             m.bias.data.fill_(0.0)
 
 
-class MLP(nn.Module):
-    def __init__(self,
-                 input_dim,
-                 hidden_dim,
-                 output_dim,
-                 hidden_depth,
-                 output_mod=None):
-        super().__init__()
-        self.trunk = mlp(input_dim, hidden_dim, output_dim, hidden_depth,
-                         output_mod)
-        self.apply(weight_init)
-
-    def forward(self, x):
-        return self.trunk(x)
-
-
-def mlp(input_dim, hidden_dim, output_dim, hidden_depth, output_mod=None):
-    if hidden_depth == 0:
-        mods = [nn.Linear(input_dim, output_dim)]
-    else:
-        mods = [nn.Linear(input_dim, hidden_dim), nn.ReLU(inplace=True)]
-        for i in range(hidden_depth - 1):
-            mods += [nn.Linear(hidden_dim, hidden_dim), nn.ReLU(inplace=True)]
-        mods.append(nn.Linear(hidden_dim, output_dim))
-    if output_mod is not None:
-        mods.append(output_mod)
-    trunk = nn.Sequential(*mods)
-    return trunk
-
-
 def get_concat_samples(policy_batch, expert_batch, args):
     online_batch_state, online_batch_next_state, online_batch_action, online_batch_reward, online_batch_done = policy_batch
 
@@ -127,3 +74,58 @@ def get_concat_samples(policy_batch, expert_batch, args):
 def average_dicts(dict1, dict2):
     return {key: 1/2 * (dict1.get(key, 0) + dict2.get(key, 0))
                      for key in set(dict1) | set(dict2)}
+
+def reward_heatmap(
+        agent: SoftQ,
+        env: CarFollowingEnv,
+        grid_granularity: float=0.5,
+        relative_speed: float=1.0,
+
+) -> None:
+
+    v_space = np.arange(0, env.max_speed, grid_granularity)
+    g_space = np.arange(0, env.max_distance, grid_granularity)
+    rel_space = relative_speed
+
+    V, G = np.meshgrid(v_space, g_space, indexing='ij')
+    state_space = np.stack([V.ravel(), G.ravel(), np.full(V.size, rel_space)], axis=1)
+
+    obs = []
+    obs_action = []
+    next_obs = []
+    dones = []
+
+    for state in tqdm(state_space):
+        env.reset()
+        env.state = state
+        action = agent.choose_action(state, sample=False)
+        next_state, reward, terminated, truncated, _ = env.step(action)
+        
+        dones.append(1 if terminated else 0)
+        obs.append(torch.FloatTensor(state).unsqueeze(0))
+        obs_action.append(action)
+        next_obs.append(torch.FloatTensor(next_state).unsqueeze(0))
+
+    rewards = []
+    with torch.no_grad():
+        for i in tqdm(range(len(obs))):
+            q_values = agent.q_net(obs[i])
+            q = q_values[0, obs_action[i]]
+
+            next_v = agent.getV(next_obs[i])
+            y = (1 - dones[i]) * agent.gamma * next_v
+            irl_reward = q - y
+            rewards.append(irl_reward.item())
+
+    rewards = np.array(rewards).reshape(len(v_space), len(g_space))
+
+    # ---- 2D Heatmap ----
+    plt.figure(figsize=(10, 6))
+    plt.pcolormesh(G, V, rewards, shading='auto', cmap='viridis')
+
+    plt.colorbar(label='IQ Reward Heatmap')
+    plt.xlabel('Distance Gap g (m)')
+    plt.ylabel('Velocity v (m/s)')
+    plt.title('2D Reward Heatmap over State Space')
+
+    plt.show()

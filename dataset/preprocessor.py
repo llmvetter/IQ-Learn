@@ -12,6 +12,7 @@ class BasePreprocessor(ABC):
     ):
         self.mdp = mdp
         self.min_speed = 5
+        self.kmh_to_ms = 0.27778
         self.a_map = np.array(
             [v for v in self.mdp.action_mapping.values()]
         )
@@ -128,7 +129,8 @@ class NapoliPreprocessor(BasePreprocessor):
         return expert_data
 
 class MilanoPreprocessor(BasePreprocessor):
-    def _filter_leader_follower_pairs(self, df, min_entries=600):
+
+    def _filter_leader_follower_pairs(self, df, min_entries=800):
         pair_counts = df.groupby(['Leader', 'Follower']).size()
         valid_pairs = pair_counts[pair_counts >= min_entries].index
         filtered_df = df[df.set_index(['Leader', 'Follower']).index.isin(valid_pairs)]
@@ -142,6 +144,7 @@ class MilanoPreprocessor(BasePreprocessor):
     ) -> dict[str, list[str, Any]]:
         subset = df[(df['Leader'] == leader) & (df['Follower'] == follower)]
         subset = subset.sort_values(by="Time [s]").reset_index(drop=True)
+
         states = np.array(list(zip(
             subset["Follower Speed"],
             subset["gap[m]"],
@@ -175,13 +178,19 @@ class MilanoPreprocessor(BasePreprocessor):
         }
 
     def preprocess(self, path: str) -> dict[str, list[str, Any]]:
+        '''
+        states will be returned in the format of [speed, gap, rel_speed]
+        '''
+
         trajectories = []
         df_init = pd.read_csv(path)
+        df_init["Follower Speed"] *= self.kmh_to_ms
+        df_init["Relative speed"] *= self.kmh_to_ms
+        
         df_reduced = df_init[[
             'Time [s]',
             'Leader',
             'Follower',
-            'Leader Speed',
             'Follower Speed',
             'Leader Tan. Acc.',
             'Follower Tan. Acc.',

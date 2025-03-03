@@ -3,6 +3,7 @@ from tqdm import tqdm
 from omegaconf import OmegaConf
 
 from environment.env import CarFollowingEnv
+from utils.utils import soft_update
 from dataset.expert_dataset import ExpertDataset
 from dataset.memory import Memory
 from agent.softq import SoftQ
@@ -53,17 +54,20 @@ class Trainer():
             # For each episode
             for _ in range(self.config.train.episodes):
 
-                # sample random action from the environment
-                if steps < self.config.train.env_steps:
+                # sample random action from the environment until
+                # enough samples are collected
+                if steps < self.config.train.sampling_steps:
                     action = self.env.action_space.sample()
                 
-                # sample action from policy
+                # sample action from policy (= act according to policy)
                 else:
                     action = self.agent.choose_action(state, sample=True)
 
                 # take action in env
                 next_state, _, done, _, _ = self.env.step(action)
                 steps += 1
+
+                #fill up memory 
                 policy_memory.add((state, next_state, action, 0.0, done))
                 
                 # Start training once memory is full
@@ -88,6 +92,12 @@ class Trainer():
                         policy_batch=policy_batch,
                         expert_batch=expert_batch,
                     )
+                    if self.config.agent.target_update_frequency and learn_step % self.config.agent.target_update_frequency == 0:
+                        soft_update(
+                            self.agent.q_net,
+                            self.agent.target_net,
+                            self.config.agent.tau,
+                        )
                 
                 if done:
                     break
