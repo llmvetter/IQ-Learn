@@ -4,8 +4,8 @@ import torch
 from torch import nn
 import matplotlib.pyplot as plt
 
-from agent.softq import SoftQ
-from environment.env import CarFollowingEnv
+from src.agent.softq import SoftQ
+from src.environment.env import CarFollowingEnv
 
 
 class eval_mode(object):
