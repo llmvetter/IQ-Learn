@@ -88,7 +88,7 @@ class CarFollowingEnv(gym.Env):
         reward = 0
 
         # Episode termination criteria
-        if next_distance_gap < 0.5 or next_distance_gap >= self.max_distance:
+        if next_distance_gap < 0.5:
             terminated = True
             reward = -1
 
