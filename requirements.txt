@@ -5,3 +5,6 @@ gymnasium==1.0.0
 torch==2.5.1
 tqdm==4.67.1
 ray==2.43.0
+ray[tune]
+omegaconf==2.3.0
+scipy==1.15.2

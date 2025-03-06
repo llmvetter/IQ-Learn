@@ -18,7 +18,7 @@ gym.register(
 )
 
 def run_training(config):
-    config = OmegaConf.load("/home/h6/leve469a/iq_learn/config.yaml")
+    config = OmegaConf.load("/home/h6/leve469a/IQ-Learn/config.yaml")
     logging.info(f"loaded config with params: {config.__dict__}")
 
     logging.info("Initializing Environment")

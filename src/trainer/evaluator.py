@@ -3,8 +3,8 @@ import numpy as np
 from omegaconf import OmegaConf
 from scipy.ndimage import gaussian_filter1d
 
-from environment.env import CarFollowingEnv
-from agent.softq import SoftQ
+from src.environment.env import CarFollowingEnv
+from src.agent.softq import SoftQ
 
 class Evaluator():
     def __init__(
