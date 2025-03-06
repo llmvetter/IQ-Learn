@@ -7,9 +7,11 @@
 #SBATCH --time=01:00:00
 #SBATCH --error="/home/leve469a/myjob-%A_%a.out"
 #SBATCH --output="/home/leve469a/myjob-%A_%a.out"
-#SBATCH --array=1-24
+#SBATCH --array=1-4
 
 ml purge
+ml release/24.04 GCCcore/11.3.0
+ml Python/3.10.4
 
 source /home/h6/leve469a/IQ-Learn/.venv/bin/activate
 
