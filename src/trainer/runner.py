@@ -1,5 +1,6 @@
 import logging
 
+from ray import tune
 from omegaconf import OmegaConf
 import gymnasium as gym
 
@@ -59,5 +60,5 @@ def run_training(config):
     metrics = evaluator.evaluate(
     num_trajectories=100,
     )
-
+    tune.report(final_score=metrics['final_score'])
     return metrics["final_score"]
