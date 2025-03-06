@@ -4,11 +4,12 @@ import gym
 import numpy as np
 import gymnasium as gym
 
-from environment.simulator import Simulator
+from src.environment.simulator import Simulator
 
 class CarFollowingEnv(gym.Env):
     def __init__(
             self,
+            dataset_path: str,
             max_speed: int = 30,
             max_distance: int = 100,
             max_rel_speed: int = 75,
@@ -21,7 +22,7 @@ class CarFollowingEnv(gym.Env):
         self.max_distance = max_distance
         self.max_rel_speed = max_rel_speed
         self.delta_t = delta_t
-        self.simulator = Simulator()
+        self.simulator = Simulator(path=dataset_path)
 
         self.action_space = gym.spaces.Discrete(len(actions))
         self.action_mapping = {i: actions[i] for i in range(len(actions))}
@@ -87,7 +88,7 @@ class CarFollowingEnv(gym.Env):
         truncated = False
         reward = 0
 
-        # Episode termination criteria
+        # Episode termination criterion -> crash
         if next_distance_gap < 0.5:
             terminated = True
             reward = -1

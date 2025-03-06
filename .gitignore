@@ -3,4 +3,5 @@
 *.pyc
 *.pkl
 *.csv
+results
 __pycache__/

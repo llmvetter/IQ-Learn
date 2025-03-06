@@ -3,7 +3,7 @@ import numpy as np
 import random
 import torch
 
-from dataset.expert_dataset import ExpertDataset
+from src.dataset.expert_dataset import ExpertDataset
 
 
 class Memory(object):
