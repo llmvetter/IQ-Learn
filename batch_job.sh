@@ -5,8 +5,8 @@
 #SBATCH --mem-per-cpu=9000
 #SBATCH --nodes=1
 #SBATCH --time=01:00:00
-#SBATCH --error="/home/<zih-login>/myjob-%A_%a.out"
-#SBATCH --output="/home/<zih-login>/myjob-%A_%a.out"
+#SBATCH --error="/home/leve469a/myjob-%A_%a.out"
+#SBATCH --output="/home/leve469a/myjob-%A_%a.out"
 #SBATCH --array=1-24
 
 ml purge
