@@ -15,9 +15,9 @@ search_space = {
 # SLURM Task ID for parallel runs
 task_id = int(sys.argv[1]) - 1
 
-# Init tuning job
+# Init tuner
 tuner = tune.Tuner(
-    tune.with_parameters(run_training),
+    run_training,
     param_space=search_space,
     tune_config=tune.TuneConfig(
         metric="final_score",
