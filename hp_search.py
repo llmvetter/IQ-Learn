@@ -12,9 +12,6 @@ search_space = {
     "agent.tau": tune.uniform(0.001, 0.05),
 }
 
-# Load Config
-config = OmegaConf.load('/home/h6/leve469a/IQ-Learn/config.yaml')
-
 # SLURM Task ID for parallel runs
 task_id = int(sys.argv[1]) - 1
 

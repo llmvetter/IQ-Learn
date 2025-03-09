@@ -18,8 +18,8 @@ gym.register(
     entry_point=CarFollowingEnv,
 )
 
-def run_training(config: OmegaConf):
-
+def run_training():
+    config = OmegaConf.load('/home/h6/leve469a/IQ-Learn/config.yaml')
     logging.info("Initializing Environment")
     env = gym.make(
     dataset_path=config.dataset_path,
