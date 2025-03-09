@@ -18,9 +18,7 @@ gym.register(
     entry_point=CarFollowingEnv,
 )
 
-def run_training(config):
-    config = OmegaConf.load("/home/h6/leve469a/IQ-Learn/config.yaml")
-    logging.info(f"loaded config with params: {config.__dict__}")
+def run_training(config: OmegaConf):
 
     logging.info("Initializing Environment")
     env = gym.make(
@@ -60,5 +58,5 @@ def run_training(config):
     metrics = evaluator.evaluate(
     num_trajectories=100,
     )
-    tune.report(final_score=metrics['final_score'])
-    return metrics["final_score"]
+    tune.report(final_score=float(metrics["final_score"]))
+    return metrics['final_score']
