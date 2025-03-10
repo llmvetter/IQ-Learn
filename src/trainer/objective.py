@@ -1,9 +1,9 @@
 import logging
-from omegaconf import OmegaConf
 
 import gymnasium as gym
 from ray import tune
 
+from src.models.dotdict import DotDict
 from src.environment.env import CarFollowingEnv
 from src.dataset.preprocessor import MilanoPreprocessor
 from src.dataset.expert_dataset import ExpertDataset
@@ -18,7 +18,7 @@ gym.register(
     entry_point=CarFollowingEnv,
 )
 
-def objective(config: OmegaConf):
+def objective(config: DotDict):
 
     logging.info("Initializing Environment")
     env = gym.make(

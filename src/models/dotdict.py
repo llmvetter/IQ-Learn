@@ -6,7 +6,7 @@ class DotDict(dict):
             value = self[name]
 
             if isinstance(value, dict):
-                value = dotdict(value)
+                value = DotDict(value)
                 self[name] = value
             return value
 
