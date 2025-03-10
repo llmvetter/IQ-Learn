@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 import gymnasium as gym
 from ray import tune
@@ -18,7 +19,9 @@ gym.register(
     entry_point=CarFollowingEnv,
 )
 
-def objective(config: DotDict):
+def objective(config: dict[str, Any]):
+
+    config = DotDict(config)
 
     logging.info("Initializing Environment")
     env = gym.make(

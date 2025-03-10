@@ -24,9 +24,6 @@ search_space = {
     }
 }
 
-merged_config = DotDict({**config_dict, **search_space})
-
-
 task_id = int(sys.argv[1]) - 1
 
 def create_name(trial):
