@@ -37,7 +37,7 @@ tuner = tune.Tuner(
     tune_config=tune.TuneConfig(
         metric="score",
         mode="max",
-        num_samples=10,
+        num_samples=400,
         trial_dirname_creator=create_name,
     ),
 )
@@ -51,4 +51,4 @@ df: pd.DataFrame = results.get_dataframe(filter_metric="score", filter_mode="min
 best_config = best_result.config if best_result else None
 
 print(f'Best config found: {best_config}')
-df.head(5)
+print(df.head(5))
