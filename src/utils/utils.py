@@ -1,4 +1,6 @@
+from typing import Any
 from tqdm import tqdm
+
 import numpy as np
 import torch
 from torch import nn
@@ -58,6 +60,23 @@ def get_concat_samples(policy_batch, expert_batch, args):
 def average_dicts(dict1, dict2):
     return {key: 1/2 * (dict1.get(key, 0) + dict2.get(key, 0))
                      for key in set(dict1) | set(dict2)}
+
+def deep_merge(
+        d1: dict[str, Any],
+        d2: dict[str, Any],
+) -> dict[str, Any]:
+
+    merged = dict(d1)
+    for key, value in d2.items():
+        if (
+            key in merged
+            and isinstance(merged[key], dict)
+            and isinstance(value, dict)
+        ):
+            merged[key] = deep_merge(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
 
 def reward_heatmap(
         agent: SoftQ,

@@ -4,7 +4,7 @@ import sys
 from ray import tune
 from omegaconf import OmegaConf
 
-from src.models.dotdict import DotDict
+from src.utils.utils import deep_merge
 from src.trainer.objective import objective
 
 # Init config
@@ -32,7 +32,7 @@ def create_name(trial):
 # Init tuner
 tuner = tune.Tuner(
     tune.with_parameters(objective),
-    param_space={**config_dict, **search_space},
+    param_space=deep_merge(config_dict, search_space),
     tune_config=tune.TuneConfig(
         metric="score",
         mode="max",
