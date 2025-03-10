@@ -1,5 +1,6 @@
 
 import sys
+import pandas as pd
 
 from ray import tune
 from omegaconf import OmegaConf
@@ -46,6 +47,8 @@ results = tuner.fit()
 
 # Get best config
 best_result = results.get_best_result(metric='score', mode='max')
+df: pd.DataFrame = results.get_dataframe(metric="score", mode="max")
 best_config = best_result.config if best_result else None
 
 print(f'Best config found: {best_config}')
+df.head(5)
