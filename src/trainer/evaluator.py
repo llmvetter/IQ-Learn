@@ -187,10 +187,10 @@ class Evaluator():
                 normalized_metrics[key] = (value - min_val) / (max_val - min_val) if max_val > min_val else 0.5
 
             weights = {
-                "crash_ratio": 0.5,
-                "distance_gap_variance": 0.2,
-                "speed_mse": 0.1,
-                "relative_speed_variance": 0.2,
+                "crash_ratio": 0.5, #lower is better
+                "distance_gap_variance": 0.2, #lower is better
+                "speed_mse": 0.1, #lower is better
+                "relative_speed_variance": 0.2, #lower is better
             }
 
             final_score = sum(weights[key] * normalized_metrics[key] for key in weights)
