@@ -27,9 +27,10 @@ search_space = {
 merged_config = DotDict({**config_dict, **search_space})
 
 
-def create_name():
-    task_id = int(sys.argv[1]) - 1
-    return f"trial_{task_id}"
+task_id = int(sys.argv[1]) - 1
+
+def create_name(trial):
+    return f"trial_{trial.trial_id}"
 
 # Init tuner
 tuner = tune.Tuner(
