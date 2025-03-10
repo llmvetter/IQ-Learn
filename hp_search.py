@@ -23,9 +23,6 @@ search_space = {
 merged_config = DotDict({**config_dict, **search_space})
 task_id = int(sys.argv[1]) - 1
 
-def trial_dirname_creator(task_id):
-    return f"trial_{task_id}"
-
 # Init tuner
 tuner = tune.Tuner(
     tune.with_parameters(objective),
@@ -34,7 +31,6 @@ tuner = tune.Tuner(
         metric="score",
         mode="max",
         num_samples=24,
-        trial_dirname_creator=trial_dirname_creator(task_id),
     ),
 )
 
