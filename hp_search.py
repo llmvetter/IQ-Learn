@@ -2,7 +2,7 @@
 import sys
 import pandas as pd
 
-from ray import tune
+from ray import tune, init
 from omegaconf import OmegaConf
 
 from src.utils.utils import deep_merge
@@ -31,6 +31,8 @@ def create_name(trial):
     return f"trial_{trial.trial_id}"
 
 # Init tuner
+init()
+
 tuner = tune.Tuner(
     tune.with_parameters(objective),
     param_space=deep_merge(config_dict, search_space),
