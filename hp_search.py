@@ -47,7 +47,7 @@ results = tuner.fit()
 
 # Get best config
 best_result = results.get_best_result(metric='score', mode='min')
-df: pd.DataFrame = results.get_dataframe(filter_metric="score", mode="min")
+df: pd.DataFrame = results.get_dataframe(filter_metric="score", filter_mode="min")
 best_config = best_result.config if best_result else None
 
 print(f'Best config found: {best_config}')
