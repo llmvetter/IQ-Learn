@@ -156,7 +156,7 @@ class Evaluator():
 
             min_gap = np.min(all_distance_gaps)
             max_gap = np.max(all_distance_gaps)
-            if max_gap > min_gap:
+            if max_gap > min_gap:  # min-max normalization
                 normalized_distance_gaps = (all_distance_gaps - min_gap) / (max_gap - min_gap)
             else:
                 normalized_distance_gaps = np.zeros_like(all_distance_gaps)
