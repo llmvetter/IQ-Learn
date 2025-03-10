@@ -1,6 +1,10 @@
-from ray import tune
+
 import sys
+
+from ray import tune
 from omegaconf import OmegaConf
+
+from src.models.dotdict import DotDict
 from src.trainer.objective import objective
 
 # Init config
@@ -16,17 +20,22 @@ search_space = {
     'agent.tau': tune.uniform(0.001, 0.05),
 }
 
-merged_config = OmegaConf.create(
-    {**config_dict, **search_space},
-)
-
-# SLURM Task ID for parallel runs
+merged_config = DotDict({**config_dict, **search_space})
 task_id = int(sys.argv[1]) - 1
+
+def trial_dirname_creator(task_id):
+    return f"trial_{task_id}"
 
 # Init tuner
 tuner = tune.Tuner(
-    objective,
-    param_space=merged_config,
+    tune.with_parameters(objective),
+    param_space={**config_dict, **search_space},
+    tune_config=tune.TuneConfig(
+        metric="score",
+        mode="max",
+        num_samples=24,
+        trial_dirname_creator=trial_dirname_creator(task_id),
+    ),
 )
 
 # Run tuning
