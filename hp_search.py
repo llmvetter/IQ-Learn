@@ -40,7 +40,7 @@ tuner = tune.Tuner(
     tune_config=tune.TuneConfig(
         metric="score",
         mode="max",
-        num_samples=200,
+        num_samples=20,
         trial_dirname_creator=create_name,
     ),
 )
