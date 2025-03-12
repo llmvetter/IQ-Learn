@@ -1,8 +1,9 @@
-
+import logging
 import sys
 import pandas as pd
 
-from ray import tune, init
+import ray
+from ray import tune
 from omegaconf import OmegaConf
 
 from src.utils.utils import deep_merge
@@ -31,7 +32,7 @@ def create_name(trial):
     return f"trial_{trial.trial_id}"
 
 # Init tuner
-init()
+ray.init(logging_level=logging.WARN)
 
 tuner = tune.Tuner(
     tune.with_parameters(objective),
@@ -50,7 +51,8 @@ results = tuner.fit()
 # Get best config
 best_result = results.get_best_result(metric='score', mode='min')
 df: pd.DataFrame = results.get_dataframe(filter_metric="score", filter_mode="min")
+df_sorted = df.sort_values(by="score", ascending=True)
 best_config = best_result.config if best_result else None
 
 print(f'Best config found: {best_config}')
-print(df.head(5))
+print(df_sorted.head(5))
