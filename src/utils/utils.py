@@ -1,27 +1,13 @@
+from typing import Any
 from tqdm import tqdm
+
 import numpy as np
 import torch
 from torch import nn
 import matplotlib.pyplot as plt
 
-from agent.softq import SoftQ
-from environment.env import CarFollowingEnv
-
-
-class eval_mode(object):
-    def __init__(self, *models):
-        self.models = models
-
-    def __enter__(self):
-        self.prev_states = []
-        for model in self.models:
-            self.prev_states.append(model.training)
-            model.train(False)
-
-    def __exit__(self, *args):
-        for model, state in zip(self.models, self.prev_states):
-            model.train(state)
-        return False
+from src.agent.softq import SoftQ
+from src.environment.env import CarFollowingEnv
 
 
 def weighted_softmax(x, weights):
@@ -74,6 +60,23 @@ def get_concat_samples(policy_batch, expert_batch, args):
 def average_dicts(dict1, dict2):
     return {key: 1/2 * (dict1.get(key, 0) + dict2.get(key, 0))
                      for key in set(dict1) | set(dict2)}
+
+def deep_merge(
+        d1: dict[str, Any],
+        d2: dict[str, Any],
+) -> dict[str, Any]:
+
+    merged = dict(d1)
+    for key, value in d2.items():
+        if (
+            key in merged
+            and isinstance(merged[key], dict)
+            and isinstance(value, dict)
+        ):
+            merged[key] = deep_merge(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
 
 def reward_heatmap(
         agent: SoftQ,

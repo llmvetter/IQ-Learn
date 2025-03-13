@@ -150,7 +150,7 @@ class SoftQ(object):
             next_v = self.getV(next_obs)
         y = (1 - done.float()) * self.gamma * next_v
 
-        reward = (current_Q - y)[is_expert.squeeze(-1)]
+        reward = (current_Q - y)[is_expert.squeeze(-1)] #filters out non-expert states
         loss_1 = -(reward).mean()
 
         # 2nd term for our loss (use expert and policy states): E_(ρ)[Q(s,a) - γV(s')]

@@ -3,9 +3,9 @@ import pandas as pd
 from scipy.stats import gaussian_kde
 
 class Simulator:
-    def __init__(self):
+    def __init__(self, path: str):
         
-        df = pd.read_csv("C:/Users/lenna/Documents/IRL/IQ-Learn/dataset/LF_data-2e5.csv")
+        df = pd.read_csv(path)
         historic_speeds = np.array(df['Relative speed'])*0.27778
         self.kde = gaussian_kde(historic_speeds)
 

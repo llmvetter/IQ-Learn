@@ -1,9 +1,10 @@
 gamma: 0.98
 seed: 42
+dataset_path: "/home/h6/leve469a/IQ-Learn/data/LF_data-2e5.csv"
 
 train:
   batch_size: 256
-  epochs: 200 #number of epochs
+  epochs: 180 #number of epochs
   episodes: 300 #number of environemnt episodes per epoch
   sampling_steps: 100 #number of environment sampling steps per episode
   learn_steps: 20000
@@ -14,22 +15,20 @@ env:
   max_g: 150 # in m
   max_rel_v: 30
   delta_t: 0.3
+  actions: [-5, -3, -1.5, -0.8, -0.4, -0.2, 0, 0.2, 0.4, 0.8, 1.5, 3, 5]
   policy_memory: 2000
   expert_memory: 10000
 
 method:
   type: iq
-  loss: value
   tanh: False
-  regularize: True
-  div: chi
   alpha: 3
 
 agent:
   name: softq
   class: agent.softq.SoftQ
-  obs_dim: 0 # To be updated after loading the environment
-  action_dim: 0 # To be updated after loading the environment
+  obs_dim: 0
+  action_dim: 0
   critic_cfg:
     _target_: agent.softq_models.SimpleQNetwork
     obs_dim: 0

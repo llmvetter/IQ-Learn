@@ -2,11 +2,11 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from omegaconf import OmegaConf
 
-from environment.env import CarFollowingEnv
-from utils.utils import soft_update
-from dataset.expert_dataset import ExpertDataset
-from dataset.memory import Memory
-from agent.softq import SoftQ
+from src.environment.env import CarFollowingEnv
+from src.utils.utils import soft_update
+from src.dataset.expert_dataset import ExpertDataset
+from src.dataset.memory import Memory
+from src.agent.softq import SoftQ
 
 
 
