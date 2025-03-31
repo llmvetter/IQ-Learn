@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any
+from sklearn.model_selection import train_test_split
 
 import numpy as np
 import pandas as pd
@@ -13,6 +14,7 @@ class BasePreprocessor(ABC):
             mdp: CarFollowingEnv,
     ):
         self.mdp = mdp
+        self.random_state = 42
         self.min_speed = 5
         self.kmh_to_ms = 0.27778
         self.a_map = np.array(
@@ -132,7 +134,7 @@ class NapoliPreprocessor(BasePreprocessor):
 
 class MilanoPreprocessor(BasePreprocessor):
 
-    def _filter_leader_follower_pairs(self, df, min_entries=800):
+    def _filter_leader_follower_pairs(self, df, min_entries=1000):
         pair_counts = df.groupby(['Leader', 'Follower']).size()
         valid_pairs = pair_counts[pair_counts >= min_entries].index
         filtered_df = df[df.set_index(['Leader', 'Follower']).index.isin(valid_pairs)]
@@ -144,6 +146,7 @@ class MilanoPreprocessor(BasePreprocessor):
             leader: int,
             follower: int,
     ) -> dict[str, list[str, Any]]:
+
         subset = df[(df['Leader'] == leader) & (df['Follower'] == follower)]
         subset = subset.sort_values(by="Time [s]").reset_index(drop=True)
 
@@ -184,7 +187,6 @@ class MilanoPreprocessor(BasePreprocessor):
         states will be returned in the format of [speed, gap, rel_speed]
         '''
 
-        trajectories = []
         df_init = pd.read_csv(path)
         df_init["Follower Speed"] *= self.kmh_to_ms
         df_init["Relative speed"] *= self.kmh_to_ms
@@ -199,14 +201,26 @@ class MilanoPreprocessor(BasePreprocessor):
             'Relative speed',
             'gap[m]',
         ]].copy()
-        df = self._filter_leader_follower_pairs(df = df_reduced)
-        unique_pairs = df.groupby(["Leader", "Follower"]).size().reset_index()
 
+        df_filtered = self._filter_leader_follower_pairs(df_reduced)
+        unique_pairs = df_filtered.groupby(["Leader", "Follower"]).size().reset_index()
+
+        train_pairs, test_pairs = train_test_split(
+            unique_pairs,
+            test_size=0.2,
+            random_state=self.random_state,
+        )
+
+        train_df = df_filtered.merge(train_pairs, on=['Leader', 'Follower'])
+        test_df = df_filtered.merge(test_pairs, on=['Leader', 'Follower'])
+
+        trajectories = []
         for _, row in unique_pairs.iterrows():
             leader, follower = row["Leader"], row["Follower"]
-            traj = self._create_filtered_trajectory(df, leader, follower)
+            traj = self._create_filtered_trajectory(train_df, leader, follower)
             if traj["length"] > 0:
                 trajectories.append(traj)
+
         expert_data = {
             "states": [traj["states"] for traj in trajectories],
             "next_states": [traj["next_states"] for traj in trajectories],
