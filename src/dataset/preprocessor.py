@@ -15,7 +15,7 @@ class BasePreprocessor(ABC):
     ):
         self.mdp = mdp
         self.random_state = 42
-        self.min_speed = 5
+        self.min_speed = 0
         self.kmh_to_ms = 0.27778
         self.a_map = np.array(
             [v for v in self.mdp.action_mapping.values()]
@@ -134,7 +134,7 @@ class NapoliPreprocessor(BasePreprocessor):
 
 class MilanoPreprocessor(BasePreprocessor):
 
-    def _filter_leader_follower_pairs(self, df, min_entries=330):
+    def _filter_leader_follower_pairs(self, df, min_entries=300):
         pair_counts = df.groupby(['Leader', 'Follower']).size()
         valid_pairs = pair_counts[pair_counts >= min_entries].index
         filtered_df = df[df.set_index(['Leader', 'Follower']).index.isin(valid_pairs)]
@@ -204,7 +204,7 @@ class MilanoPreprocessor(BasePreprocessor):
         ]].copy()
 
         df_filtered = self._filter_leader_follower_pairs(df_reduced)
-        unique_pairs = df_filtered.groupby(["Leader", "Follower"]).size().reset_index()
+        unique_pairs = df_filtered[['Leader', 'Follower']].drop_duplicates()
 
         train_pairs, test_pairs = train_test_split(
             unique_pairs,
