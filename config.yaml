@@ -1,10 +1,10 @@
 gamma: 0.98
 seed: 42
-dataset_path: "/home/h6/leve469a/IQ-Learn/data/LF_data-2e5.csv"
+dataset_path: "C:/Users/lenna/Documents/IRL/data/TrajData_Milano/LF_data-2e5.csv"
 
 train:
   batch_size: 256
-  epochs: 180 #number of epochs
+  epochs: 120 #number of epochs
   episodes: 300 #number of environemnt episodes per epoch
   sampling_steps: 100 #number of environment sampling steps per episode
   learn_steps: 20000
@@ -14,7 +14,7 @@ env:
   max_v: 40 # in m/s
   max_g: 150 # in m
   max_rel_v: 30
-  delta_t: 0.3
+  delta_t: 0.1
   actions: [-5, -3, -1.5, -0.8, -0.4, -0.2, 0, 0.2, 0.4, 0.8, 1.5, 3, 5]
   policy_memory: 2000
   expert_memory: 10000
