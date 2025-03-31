@@ -17,7 +17,7 @@ env:
   delta_t: 0.1
   actions: [-5, -3, -1.5, -0.8, -0.4, -0.2, 0, 0.2, 0.4, 0.8, 1.5, 3, 5]
   policy_memory: 2000
-  expert_memory: 10000
+  expert_memory: 15000
 
 method:
   type: iq
