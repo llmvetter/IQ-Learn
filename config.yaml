@@ -4,7 +4,7 @@ dataset_path: "/home/h6/leve469a/IQ-Learn/data/LF_data-2e5.csv"
 
 train:
   batch_size: 256
-  epochs: 120 #number of epochs
+  epochs: 100 #number of epochs
   episodes: 300 #number of environemnt episodes per epoch
   sampling_steps: 100 #number of environment sampling steps per episode
   learn_steps: 20000
