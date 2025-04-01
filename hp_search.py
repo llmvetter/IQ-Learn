@@ -19,6 +19,9 @@ search_space = {
     'train':{
         'batch_size': tune.choice([32, 128, 256, 512]),
     },
+    'env':{
+        'delta_t': tune.choice([0.2, 0.3, 0.4, 0.5]),
+    },
     'method': {
         'alpha': tune.uniform(1, 5),
         'tanh': tune.choice([True, False]),
