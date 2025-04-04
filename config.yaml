@@ -1,10 +1,10 @@
-gamma: 0.98
+gamma: 0.961953
 seed: 42
-dataset_path: "/home/h6/leve469a/IQ-Learn/data/LF_data-2e5.csv"
+dataset_path: "C:/Users/lenna/Documents/IRL/data/TrajData_Milano/LF_data-2e5.csv"
 
 train:
   batch_size: 256
-  epochs: 180 #number of epochs
+  epochs: 128 #number of epochs
   episodes: 300 #number of environemnt episodes per epoch
   sampling_steps: 100 #number of environment sampling steps per episode
   learn_steps: 20000
@@ -14,15 +14,15 @@ env:
   max_v: 40 # in m/s
   max_g: 150 # in m
   max_rel_v: 30
-  delta_t: 0.3
+  delta_t: 0.2
   actions: [-5, -3, -1.5, -0.8, -0.4, -0.2, 0, 0.2, 0.4, 0.8, 1.5, 3, 5]
   policy_memory: 2000
   expert_memory: 10000
 
 method:
   type: iq
-  tanh: False
-  alpha: 3
+  tanh: True
+  alpha: 4.04
 
 agent:
   name: softq
@@ -33,11 +33,11 @@ agent:
     _target_: agent.softq_models.SimpleQNetwork
     obs_dim: 0
     action_dim: 0
-  critic_lr: 5e-5
+  critic_lr: 2.5e-5
   critic_betas: [0.9, 0.999]
   init_temp: 0.1
   target_update_frequency: 1 # 1 equals soft update, >1 for hard updates
-  tau: 0.01 # Percentage of parameters to copy q_net into target, tau=1 equals hard update
+  tau: 0.029 # Percentage of parameters to copy q_net into target, tau=1 equals hard update
 
 q_net:
   _target_: agent.softq_models.SimpleQNetwork
