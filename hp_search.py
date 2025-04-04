@@ -20,6 +20,12 @@ search_space = {
         'alpha': tune.uniform(1, 5),
         'tanh': tune.choice([True, False]),
     },
+    'train': {
+        'batch_size': tune.choice([64, 128, 256, 512]),
+    },
+    'env': {
+        'delta_t': tune.choice([0.1, 0.2, 0.3, 0.4, 0.5]),
+    },
     'agent': {
         'critic_lr': tune.loguniform(1e-6, 1e-4),
         'tau': tune.uniform(0.001, 0.05),
