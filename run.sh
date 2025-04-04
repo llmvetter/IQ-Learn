@@ -6,7 +6,7 @@
 #SBATCH --nodes=1
 #SBATCH --time=02:00:00
 #SBATCH --error="/home/leve469a/iqlearn_main-%A_%a.out"
-#SBATCH --output="/home/leve469a/iqlear_main-%A_%a.out"
+#SBATCH --output="/home/leve469a/iqlearn_main-%A_%a.out"
 #SBATCH --array=1-4
 
 ml purge
