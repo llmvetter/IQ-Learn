@@ -1,6 +1,5 @@
 from typing import Optional, Any
 
-import gym
 import numpy as np
 import gymnasium as gym
 

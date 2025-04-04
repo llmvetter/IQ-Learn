@@ -16,6 +16,12 @@ config_dict = OmegaConf.to_container(config, resolve=True)
 # Define hyperparameter search space
 search_space = {
     'gamma': tune.uniform(0.95, 0.99),
+    'train':{
+        'batch_size': tune.choice([32, 128, 256, 512]),
+    },
+    'env':{
+        'delta_t': tune.choice([0.2, 0.3, 0.4, 0.5]),
+    },
     'method': {
         'alpha': tune.uniform(1, 5),
         'tanh': tune.choice([True, False]),
