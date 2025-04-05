@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import Any
-from sklearn.model_selection import train_test_split
 
 import numpy as np
 import pandas as pd
@@ -24,9 +23,10 @@ class BasePreprocessor(ABC):
     def preprocess(self, path: str) -> dict[str, list[str, Any]]:
         pass
 
+
 class MilanoPreprocessor(BasePreprocessor):
 
-    def _filter_leader_follower_pairs(self, df, min_entries=1000):
+    def _filter_leader_follower_pairs(self, df, min_entries=800):
         pair_counts = df.groupby(['Leader', 'Follower']).size()
         valid_pairs = pair_counts[pair_counts >= min_entries].index
         filtered_df = df[df.set_index(['Leader', 'Follower']).index.isin(valid_pairs)]
@@ -97,19 +97,10 @@ class MilanoPreprocessor(BasePreprocessor):
         df_filtered = self._filter_leader_follower_pairs(df_reduced)
         unique_pairs = df_filtered.groupby(["Leader", "Follower"]).size().reset_index()
 
-        train_pairs, test_pairs = train_test_split(
-            unique_pairs,
-            test_size=0.2,
-            random_state=self.random_state,
-        )
-
-        train_df = df_filtered.merge(train_pairs, on=['Leader', 'Follower'])
-        test_df = df_filtered.merge(test_pairs, on=['Leader', 'Follower'])
-
         trajectories = []
         for _, row in unique_pairs.iterrows():
             leader, follower = row["Leader"], row["Follower"]
-            traj = self._create_filtered_trajectory(train_df, leader, follower)
+            traj = self._create_filtered_trajectory(df_filtered, leader, follower)
             if traj["length"] > 0:
                 trajectories.append(traj)
 
