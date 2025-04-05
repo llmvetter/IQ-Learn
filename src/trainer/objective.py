@@ -61,6 +61,6 @@ def objective(config: dict[str, Any]):
     metrics = evaluator.evaluate(
         num_trajectories=100,
     )
-    tune.report({'score': metrics['final_score']})
+    tune.report({'score': metrics['score']})
 
-    return {'score': metrics['final_score']}
+    return {'score': metrics['score']}
