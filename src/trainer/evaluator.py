@@ -203,5 +203,5 @@ class Evaluator():
         return {
             "metrics": metrics,
             "normalized_metrics": normalized_metrics,
-            "final_score": final_score
+            "score": final_score
         }
