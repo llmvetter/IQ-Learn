@@ -1,13 +1,13 @@
-gamma: 0.98
+gamma: 0.97
 seed: 42
-dataset_path: "/home/h6/leve469a/IQ-Learn/data/LF_data-2e5.csv"
+dataset_path: "C:/Users/lenna/Documents/IRL/data/TrajData_Milano/LF_data-2e5.csv"
 
 train:
   batch_size: 256
-  epochs: 200 #number of epochs
+  epochs: 100 #number of epochs
   episodes: 300 #number of environemnt episodes per epoch
   sampling_steps: 100 #number of environment sampling steps per episode
-  learn_steps: 10000
+  learn_steps: 15000
 
 env:
   name: CarFollowing
@@ -27,12 +27,12 @@ method:
 agent:
   name: softq
   class: agent.softq.SoftQ
-  obs_dim: 0
-  action_dim: 0
+  obs_dim: 3
+  action_dim: 13
   critic_cfg:
     _target_: agent.softq_models.SimpleQNetwork
-    obs_dim: 0
-    action_dim: 0
+    obs_dim: 3
+    action_dim: 13
   critic_lr: 5e-5
   critic_betas: [0.9, 0.999]
   init_temp: 0.1
