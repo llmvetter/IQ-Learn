@@ -1,6 +1,6 @@
 gamma: 0.97
 seed: 42
-dataset_path: "C:/Users/lenna/Documents/IRL/data/TrajData_Milano/LF_data-2e5.csv"
+dataset_path: "/home/h6/leve469a/IQ-Learn/data/LF_data-2e5.csv"
 
 train:
   batch_size: 256
