@@ -5,8 +5,8 @@
 #SBATCH --mem-per-cpu=9000
 #SBATCH --nodes=1
 #SBATCH --time=02:00:00
-#SBATCH --error="/home/leve469a/iqlearn_finetune-%A_%a.out"
-#SBATCH --output="/home/leve469a/iqlearn_finetune-%A_%a.out"
+#SBATCH --error="/home/leve469a/iqlearn_train1_%a.out"
+#SBATCH --output="/home/leve469a/iqlearn_train1_%a.out"
 #SBATCH --array=1-4
 
 ml purge
