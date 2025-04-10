@@ -1,6 +1,6 @@
 gamma: 0.97
 seed: 42
-dataset_path: "/home/h6/leve469a/data/TrajData_Milano/train1/train.csv"
+dataset_path: "/home/h6/leve469a/data/TrajData_Milano/train2/train.csv"
 
 train:
   batch_size: 256
