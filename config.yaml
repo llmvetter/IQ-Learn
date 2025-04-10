@@ -1,13 +1,13 @@
 gamma: 0.97
 seed: 42
-dataset_path: "/home/h6/leve469a/IQ-Learn/data/LF_data-2e5.csv"
+dataset_path: "/home/h6/leve469a/data/TrajData_Milano/train1/train.csv"
 
 train:
   batch_size: 256
   epochs: 100 #number of epochs
   episodes: 300 #number of environemnt episodes per epoch
   sampling_steps: 100 #number of environment sampling steps per episode
-  learn_steps: 15000
+  learn_steps: 12000
 
 env:
   name: CarFollowing
