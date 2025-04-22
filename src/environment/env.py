@@ -69,10 +69,11 @@ class CarFollowingEnv(gym.Env):
         # gap transition
         if lead_speed:
             relative_speed = lead_speed - ego_speed
-            next_distance_gap = distance_to_lead + (relative_speed*self.delta_t) - (0.5*action*self.delta_t**2) #ego(v) - lead(v)
+            next_distance_gap = distance_to_lead + (relative_speed*self.delta_t) - (0.5*action*self.delta_t**2)
+            # relative speed transition
             next_relative_speed = lead_speed - next_ego_speed
         else:
-            next_distance_gap = distance_to_lead + (relative_speed*self.delta_t) - (0.5*action*self.delta_t**2) #ego(v) - lead(v)
+            next_distance_gap = distance_to_lead + (relative_speed*self.delta_t) - (0.5*action*self.delta_t**2)
             # relative speed transition
             next_relative_speed = self.simulator.smooth_relative_speed(relative_speed)
 

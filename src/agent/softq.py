@@ -142,15 +142,25 @@ class SoftQ(object):
         ######
         # IQ-Learn minimal implementation with X^2 divergence
         # Calculate 1st term of loss: -E_(ρ_expert)[Q(s, a) - γV(s')]
+        # Uses expert states only
+
+        # Q(s,a)
         current_Q = self.critic(obs, action)
 
+        # V(s')
         if self.target_update_frequency:
             next_v = self.get_targetV(next_obs)
         else:
             next_v = self.getV(next_obs)
+
+        # γV(s'), will be 0 if done
         y = (1 - done.float()) * self.gamma * next_v
 
-        reward = (current_Q - y)[is_expert.squeeze(-1)] #filters out non-expert states
+        # E_(ρ_expert)[Q(s, a) - γV(s')], non expert states are squeezed out
+        reward = (current_Q - y)[is_expert.squeeze(-1)]
+
+        # -E_(ρ_expert)[Q(s, a) - γV(s')]
+        # batch computation, so we take the reward mean over all states
         loss_1 = -(reward).mean()
 
         # 2nd term for our loss (use expert and policy states): E_(ρ)[Q(s,a) - γV(s')]
