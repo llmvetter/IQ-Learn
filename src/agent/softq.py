@@ -163,7 +163,7 @@ class SoftQ(object):
         # batch computation, so we take the reward mean over all states
         loss_1 = -(reward).mean()
 
-        # 2nd term for our loss (use expert and policy states): E_(ρ)[Q(s,a) - γV(s')]
+        # 2nd term for our loss (use expert and policy states): E_(ρ)[V(s) - γV(s')]
         value_loss = (self.getV(obs) - y).mean()
 
         # Use χ2 divergence (adds a extra term to the loss)
