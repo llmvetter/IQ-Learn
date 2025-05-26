@@ -113,22 +113,27 @@ def reward_heatmap(
     with torch.no_grad():
         for i in tqdm(range(len(obs))):
             q_values = agent.q_net(obs[i])
-            q = q_values[0, obs_action[i]]
+            irl_reward = torch.max(q_values)
+            # q = q_values[0, obs_action[i]]
 
-            next_v = agent.getV(next_obs[i])
-            y = (1 - dones[i]) * agent.gamma * next_v
-            irl_reward = q - y
+            # next_v = agent.getV(next_obs[i])
+            # y = (1 - dones[i]) * agent.gamma * next_v
+            # irl_reward = q - y
             rewards.append(irl_reward.item())
-
+    rewards = np.array(rewards)
+    rewards[rewards < 0] = 0
     rewards = np.array(rewards).reshape(len(v_space), len(g_space))
 
     # ---- 2D Heatmap ----
-    plt.figure(figsize=(10, 6))
-    plt.pcolormesh(G, V, rewards, shading='auto', cmap='viridis')
-
-    plt.colorbar(label='IQ Reward Heatmap')
-    plt.xlabel('Distance Gap g (m)')
-    plt.ylabel('Velocity v (m/s)')
-    plt.title('2D Reward Heatmap over State Space')
-
+    _, ax = plt.subplots(figsize=(10, 8))
+    scatter = ax.scatter(
+        state_space[:, 1],
+        state_space[:, 0],
+        c=rewards,
+        cmap='viridis',
+    )
+    plt.colorbar(scatter, label='Reward')
+    ax.set_xlabel('Distance Gap g (m)')
+    ax.set_ylabel('Velocity v in m/s')
+    ax.set_title('Reward heatmap over State Space')
     plt.show()
