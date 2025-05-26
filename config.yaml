@@ -1,28 +1,28 @@
-gamma: 0.97
+gamma: 0.967014
 seed: 42
-dataset_path: "/home/h6/leve469a/data/TrajData_Milano/train3/train.csv"
+dataset_path: "C:/Users/lenna/Documents/IRL/data/TrajData_Milano/train1/train.csv"
 
 train:
-  batch_size: 256
+  batch_size: 128
   epochs: 100 #number of epochs
-  episodes: 300 #number of environemnt episodes per epoch
+  episodes: 500 #number of environemnt episodes per epoch
   sampling_steps: 100 #number of environment sampling steps per episode
   learn_steps: 12000
 
 env:
   name: CarFollowing
-  max_v: 40 # in m/s
-  max_g: 150 # in m
+  max_v: 30 # in m/s
+  max_g: 100 # in m
   max_rel_v: 30
   delta_t: 0.2
   actions: [-5, -3, -1.5, -0.8, -0.4, -0.2, 0, 0.2, 0.4, 0.8, 1.5, 3, 5]
-  policy_memory: 2000
-  expert_memory: 29560
+  policy_memory: 4000
+  expert_memory: 10274
 
 method:
   type: iq
   tanh: True
-  alpha: 4.04
+  alpha: 4.10503
 
 agent:
   name: softq
@@ -33,11 +33,11 @@ agent:
     _target_: agent.softq_models.SimpleQNetwork
     obs_dim: 3
     action_dim: 13
-  critic_lr: 5e-5
+  critic_lr: 3.37129e-05
   critic_betas: [0.9, 0.999]
   init_temp: 0.1
   target_update_frequency: 1 # 1 equals soft update, >1 for hard updates
-  tau: 0.029 # Percentage of parameters to copy q_net into target, tau=1 equals hard update
+  tau: 0.0273101 # Percentage of parameters to copy q_net into target, tau=1 equals hard update
 
 q_net:
   _target_: agent.softq_models.SimpleQNetwork
